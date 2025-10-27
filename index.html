@@ -1,199 +1,252 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Provisioning</title>
-
-<style> 
-  body {
-    font-family: "Segoe UI", Arial, sans-serif;
-    background-color: #f6f8fa;
-    margin: 0;
-    padding: 20px;
-  }
-
-  h1 {
-    text-align: center;
-    color: #2e7d32;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #fff;
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.05);
-  }
-
-  th {
-    background: #2e7d32;
-    color: white;
-    padding: 10px;
-    text-align: center;
-  }
-
-  td {
-    border: 1px solid #eee;
-    padding: 8px;
-    text-align: center;
-  }
-
-  tr:nth-child(even) { background: #f9f9f9; }
-  tr:hover { background: #e8f5e9; }
-
-  td.clickable {
-    color: #1565c0;
-    font-weight: bold;
-    cursor: pointer;
-  }
-
-  /* 🔹 Sembunyikan area detail dari awal */
-  #detail {
-    margin-top: 25px;
-    padding: 15px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.05);
-    display: none; /* inilah yang menyembunyikan */
-  }
-
-  #detail h3 {
-    margin-top: 0;
-    color: #2e7d32;
-  }
-
-  .footer {
-    text-align: center;
-    color: #777;
-    margin-top: 20px;
-    font-size: 0.9em;
-  }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Dasprovi - Interactive</title>
+<style>
+  body { font-family: "Segoe UI", Arial, sans-serif; background:#f6f8fa; margin:20px; color:#222; }
+  h1 { text-align:center; color:#2e7d32; }
+  table { width:100%; border-collapse:collapse; background:#fff; box-shadow:0 3px 8px rgba(0,0,0,0.05); border-radius:8px; overflow:hidden; }
+  th { background:#2e7d32; color:#fff; padding:10px; text-align:center; border:1px solid #e6e6e6; }
+  td { padding:8px; text-align:center; border:1px solid #f0f0f0; }
+  tr:nth-child(even){ background:#fafafa; }
+  tr:hover{ background:#e8f5e9; }
+  td.clickable{ color:#1565c0; font-weight:700; cursor:pointer; }
+  #detail { display:none; margin-top:18px; padding:12px; background:#fff; border-radius:8px; box-shadow:0 3px 8px rgba(0,0,0,0.05); }
+  #detail h3{ margin:0 0 10px 0; color:#2e7d32; }
+  .small { font-size:0.9rem; color:#666; text-align:center; margin-top:12px; }
 </style>
 </head>
 <body>
 
-<h1>Produktivitas Provisioning</h1>
-<table id="data"></table>
+<h1>📊 das_provi (interactive)</h1>
+<div id="notice" class="small">Klik angka (atau sel dengan warna biru) untuk melihat detail dari sheet <strong>Provi_spa</strong></div>
 
-<!-- 🔹 Area detail, disembunyikan dulu -->
-<div id="detail" style="display:none;">
-  <h3>Detail Data dari Sheet: Provi_spa</h3>
+<table id="mainTable"></table>
+
+<div id="detail">
+  <h3>Detail: <span id="detailTitle"></span></h3>
   <table id="detailTable"></table>
 </div>
 
-<div class="footer">Klik angka untuk melihat detail dari Provi_spa</div>
-
 <script>
-const sheetID = "1u7sHZTiuVvw9l1OHethOqi2lGhO-9c09ieN2Rvwye1w";
-const sheetMain = "das_provi";
-const sheetDetail = "Provi_spa";
+/* ----------------- CONFIG ----------------- */
+const SHEET_ID = "1u7sHZTiuVvw9l1OHethOqi2lGhO-9c09ieN2Rvwye1w";
+const SHEET_MAIN = "das_provi";
+const SHEET_DETAIL = "Provi_spa";
+const URL_CSV = (sheet) => `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheet)}`;
 
-const urlMain = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&sheet=${sheetMain}`;
-const urlDetail = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&sheet=${sheetDetail}`;
+/* ------------- CSV Parser (handles quotes) ------------- */
+function parseCSV(text) {
+  const rows = [];
+  let cur = "";
+  let row = [];
+  let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    const nxt = text[i+1];
+    if (ch === '"' ) {
+      if (inQuotes && nxt === '"') { // double quote inside quotes -> escaped quote
+        cur += '"';
+        i++; // skip next
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === ',' && !inQuotes) {
+      row.push(cur);
+      cur = "";
+    } else if ((ch === '\n' || ch === '\r') && !inQuotes) {
+      // handle CRLF
+      if (ch === '\r' && nxt === '\n') { i++; }
+      row.push(cur);
+      cur = "";
+      // push row if not completely empty (preserve empty rows as [])
+      rows.push(row);
+      row = [];
+    } else {
+      cur += ch;
+    }
+  }
+  // push last
+  if (cur !== "" || row.length > 0) {
+    row.push(cur);
+    rows.push(row);
+  }
+  // trim trailing possible empty line
+  return rows;
+}
 
-let detailData = [];
+/* ------------- Helper: find header row ------------- */
+/* search for row index that contains at least one of keywords */
+function findHeaderRow(rows, keywords) {
+  const lowKeys = keywords.map(k => k.toLowerCase());
+  for (let r = 0; r < Math.min(rows.length, 10); r++) { // search top 10 rows
+    const row = rows[r].map(c => (c||"").toString().toLowerCase());
+    const found = lowKeys.some(k => row.some(c => c.includes(k)));
+    if (found) return r;
+  }
+  // fallback: if no keyword found, try row index 4 (zero-based) as original design
+  return Math.min(4, rows.length - 1);
+}
 
-// 🔹 Muat data dari Provi_spa
-fetch(urlDetail)
-  .then(res => res.text())
-  .then(csv => {
-    detailData = csv.split("\n").map(r => r.split(","));
+/* ------------- Load detail sheet first ------------- */
+let detailRows = [];
+fetch(URL_CSV(SHEET_DETAIL))
+  .then(res => {
+    if (!res.ok) throw new Error('Gagal ambil sheet Provi_spa — cek share permissions.');
+    return res.text();
+  })
+  .then(txt => {
+    detailRows = parseCSV(txt).filter(r => r.length>0 && r.some(cell => (cell||"").toString().trim() !== ""));
+  })
+  .catch(err => {
+    console.warn("Detail load:", err);
+    detailRows = [];
   });
 
-// 🔹 Muat data dari das_provi
-fetch(urlMain)
-  .then(res => res.text())
-  .then(csv => {
-    const rows = csv.split("\n").map(r => r.split(","));
-    const table = document.getElementById("data");
+/* ------------- Load main sheet and render ------------- */
+fetch(URL_CSV(SHEET_MAIN))
+  .then(res => {
+    if (!res.ok) throw new Error('Gagal ambil sheet das_provi — cek share permissions.');
+    return res.text();
+  })
+  .then(txt => {
+    const rows = parseCSV(txt);
+    // remove fully-empty trailing rows
+    while (rows.length && rows[rows.length-1].join("").trim()==="") rows.pop();
 
-    const filteredRows = rows.slice(4); // skip baris header 1–4
+    // find header row dynamically (look for 'teknis' or 'teknisi' etc.)
+    const headerKeywords = ["teknisi","kendala","ps","sisa","tsel","indibiz","survey"];
+    const headerRowIndex = findHeaderRow(rows, headerKeywords);
 
-    const headers = [
-      "TEKNISI","TSEL AO","TSEL MO",
-      "INDIBIZ AO","INDIBIZ MO",
-      "SURVEY","TARIK DC","BAI",
-      "PS","KENDALA","SISA WO"
-    ];
+    // header and data start computations
+    const rawHeader = rows[headerRowIndex] || [];
+    // If header starts earlier than column C, we still will slice from column C for compatibility
+    const colStart = 2; // column C is index 2
+    const headers = rawHeader.slice(colStart).map(h => (h||"").toString().trim() || "COL");
 
-    const thead = document.createElement("thead");
-    const trHead = document.createElement("tr");
-    headers.forEach(h => {
-      const th = document.createElement("th");
-      th.textContent = h;
-      trHead.appendChild(th);
-    });
-    thead.appendChild(trHead);
-    table.appendChild(thead);
+    const dataRows = [];
+    for (let i = headerRowIndex + 1; i < rows.length; i++) {
+      const r = rows[i];
+      // ensure columns exist
+      const cells = (r.length >= colStart) ? r.slice(colStart) : Array(headers.length).fill("");
+      // pad to header length
+      while (cells.length < headers.length) cells.push("");
+      // skip completely empty rows
+      if (cells.join("").trim() === "") continue;
+      dataRows.push(cells);
+    }
 
-    const tbody = document.createElement("tbody");
-    filteredRows.forEach(r => {
-      const row = r.slice(2);
-      if (row.join("").trim() === "") return;
-
-      const tr = document.createElement("tr");
-      row.forEach((val, i) => {
-        const td = document.createElement("td");
-        td.textContent = val.replace(/(^"|"$)/g, "");
-
-        // hanya kolom angka yang bisa diklik
-        if (i > 0 && val.trim() !== "" && !isNaN(val)) {
-          td.classList.add("clickable");
-          td.addEventListener("click", () => showDetail(row[0], headers[i]));
-        }
-
-        tr.appendChild(td);
-      });
-      tbody.appendChild(tr);
-    });
-    table.appendChild(tbody);
+    renderMainTable(headers, dataRows);
+  })
+  .catch(err => {
+    document.getElementById("mainTable").innerHTML = `<tr><td style="padding:12px;color:#900">Error memuat data: ${err.message}</td></tr>`;
+    console.error(err);
   });
 
-// 🔹 Fungsi tampilkan detail
+/* ------------- Render main table ------------- */
+function renderMainTable(headers, rows) {
+  const table = document.getElementById("mainTable");
+  table.innerHTML = "";
+  // thead
+  const thead = document.createElement("thead");
+  const thr = document.createElement("tr");
+  headers.forEach(h => {
+    const th = document.createElement("th");
+    th.textContent = h;
+    thr.appendChild(th);
+  });
+  thead.appendChild(thr);
+  table.appendChild(thead);
+
+  // tbody
+  const tbody = document.createElement("tbody");
+  rows.forEach(row => {
+    const tr = document.createElement("tr");
+    row.forEach((cell, idx) => {
+      const td = document.createElement("td");
+      td.textContent = (cell||"").toString().trim();
+      // decide clickable: prefer if header name indicates numeric or 'kendala' or 'ps'
+      const headerName = (headers[idx]||"").toString().toLowerCase();
+      const isNumber = td.textContent !== "" && !isNaN(td.textContent.replace(/,/g,""));
+      const kendalaLike = headerName.includes("kendal") || headerName.includes("kendala");
+      const psLike = headerName.includes("ps") || headerName.includes("post") || headerName.includes("problem");
+      // make clickable if numeric OR header suggests kendala/ps
+      if (isNumber || kendalaLike || psLike) {
+        td.classList.add("clickable");
+        td.addEventListener("click", () => {
+          const teknisi = (row[0]||"").toString().trim(); // assume first displayed col = teknisi
+          const headerLabel = headers[idx] || `Col ${idx+1}`;
+          showDetail(teknisi, headerLabel);
+        });
+      }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+}
+
+/* ------------- showDetail: filter detailRows and render ------------- */
 function showDetail(teknisi, kategori) {
   const detailDiv = document.getElementById("detail");
   const detailTable = document.getElementById("detailTable");
-
-  // bersihkan isi lama
+  const detailTitle = document.getElementById("detailTitle");
   detailTable.innerHTML = "";
+  detailTitle.textContent = `${kategori} — ${teknisi}`;
 
-  // filter berdasarkan teknisi
-  const filtered = detailData.filter(r =>
-    r.some(c => c.toLowerCase().includes(teknisi.toLowerCase()))
-  );
-
-  // tampilkan area detail
-  detailDiv.style.display = "block";
-
-  if (filtered.length === 0) {
-    detailTable.innerHTML = `<tr><td>Tidak ada detail untuk ${teknisi} (${kategori})</td></tr>`;
+  if (!detailRows || detailRows.length === 0) {
+    detailTable.innerHTML = "<tr><td>Tidak ada data detail (sheet kosong atau belum dapat diakses).</td></tr>";
+    detailDiv.style.display = "block";
+    detailDiv.scrollIntoView({behavior:"smooth"});
     return;
   }
 
-  // header
+  // find header row in detailRows (assume first non-empty row)
+  const detHeader = detailRows[0];
+  // find candidate column for teknisi in detail sheet
+  let teknisiColIndex = -1;
+  for (let i = 0; i < detHeader.length; i++) {
+    const h = (detHeader[i]||"").toString().toLowerCase();
+    if (h.includes("teknis") || h.includes("teknisi") || h.includes("nama")) { teknisiColIndex = i; break; }
+  }
+  // if not found, fallback to search any column for matches
+  const filtered = detailRows.filter((r, idx) => {
+    if (idx === 0) return true; // keep header
+    const line = r.join(" ").toLowerCase();
+    return teknisi ? line.includes(teknisi.toLowerCase()) : false;
+  });
+
+  if (filtered.length <= 1) {
+    detailTable.innerHTML = `<tr><td>Tidak ada detail untuk <strong>${teknisi}</strong> pada kategori <strong>${kategori}</strong>.</td></tr>`;
+    detailDiv.style.display = "block";
+    detailDiv.scrollIntoView({behavior:"smooth"});
+    return;
+  }
+
+  // render header (first row of filtered is header row)
   const headerRow = document.createElement("tr");
   filtered[0].forEach(h => {
     const th = document.createElement("th");
-    th.textContent = h.replace(/(^"|"$)/g, "");
+    th.textContent = (h||"").toString().trim();
     headerRow.appendChild(th);
   });
   detailTable.appendChild(headerRow);
 
-  // isi data (maksimal 20 baris)
-  filtered.slice(1, 20).forEach(r => {
+  // render up to 50 rows of detail
+  filtered.slice(1, 51).forEach(r => {
     const tr = document.createElement("tr");
-    r.forEach(v => {
+    r.forEach(c => {
       const td = document.createElement("td");
-      td.textContent = v.replace(/(^"|"$)/g, "");
+      td.textContent = (c||"").toString().trim();
       tr.appendChild(td);
     });
     detailTable.appendChild(tr);
   });
 
-  // gulir otomatis ke bawah
-  detailDiv.scrollIntoView({ behavior: "smooth" });
+  detailDiv.style.display = "block";
+  detailDiv.scrollIntoView({behavior:"smooth"});
 }
 </script>
 
