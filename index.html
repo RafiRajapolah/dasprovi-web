@@ -2,7 +2,6 @@
 const sheetID = "1u7sHZTiuVvw9l1OHethOqi2lGhO-9c09ieN2Rvwye1w";
 const sheetName = "das_provi";
 
-// Ambil data dalam format CSV dari Google Sheets
 const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&sheet=${sheetName}`;
 
 fetch(url)
@@ -11,21 +10,27 @@ fetch(url)
     const rows = csv.split("\n").map(r => r.split(","));
     const table = document.getElementById("data");
 
-    // Buang 2 baris pertama (ambil mulai baris ke-3)
-    const filteredRows = rows.slice(2);
+    // Buang 4 baris pertama (mulai ambil dari baris ke-5)
+    const filteredRows = rows.slice(4);
 
     if (filteredRows.length === 0) {
       table.innerHTML = "<tr><td>Tidak ada data</td></tr>";
       return;
     }
 
-    // Buat header dari kolom C ke kanan (indeks 2)
-    const headers = filteredRows[0].slice(2);
+    // Buat header manual (karena header di spreadsheet merge)
+    const headers = [
+      "TEKNISI",
+      "TSEL AO", "TSEL MO",
+      "INDIBIZ AO", "INDIBIZ MO",
+      "SURVEY", "TARIK DC", "BAI", "PS", "KENDALA", "SISA WO"
+    ];
+
     const thead = document.createElement("thead");
     const headerRow = document.createElement("tr");
     headers.forEach(h => {
       const th = document.createElement("th");
-      th.textContent = h.replace(/(^"|"$)/g, ""); // hapus tanda kutip
+      th.textContent = h;
       headerRow.appendChild(th);
     });
     thead.appendChild(headerRow);
@@ -33,8 +38,10 @@ fetch(url)
 
     // Buat isi tabel
     const tbody = document.createElement("tbody");
-    for (let i = 1; i < filteredRows.length; i++) {
-      const row = filteredRows[i].slice(2);
+    for (let i = 0; i < filteredRows.length; i++) {
+      const row = filteredRows[i].slice(2); // mulai dari kolom C
+      if (row.join("").trim() === "") continue; // skip baris kosong
+
       const tr = document.createElement("tr");
       row.forEach(val => {
         const td = document.createElement("td");
