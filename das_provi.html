@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data dari Google Sheet - das_provi</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background: #4CAF50;
+      color: white;
+    }
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+  </style>
+</head>
+<body>
+  <h1>Data dari Sheet: das_provi</h1>
+  <table id="data"></table>
+
+  <script>
+    // Ganti dengan ID spreadsheet kamu
+    const sheetID = "1u7sHZTiuVvw9l1OHethOqi2lGhO-9c09ieN2Rvwye1w";
+    const sheetName = "das_provi";
+    const url = `https://opensheet.elk.sh/${sheetID}/${sheetName}`;
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        const table = document.getElementById("data");
+        if (data.length === 0) {
+          table.innerHTML = "<tr><td>Tidak ada data</td></tr>";
+          return;
+        }
+
+        // Buat header
+        const headers = Object.keys(data[0]);
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+        headers.forEach(h => {
+          const th = document.createElement("th");
+          th.textContent = h;
+          headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        // Buat isi tabel
+        const tbody = document.createElement("tbody");
+        data.forEach(row => {
+          const tr = document.createElement("tr");
+          headers.forEach(h => {
+            const td = document.createElement("td");
+            td.textContent = row[h];
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+      })
+      .catch(err => {
+        console.error("Gagal memuat data:", err);
+        document.getElementById("data").innerHTML = "<tr><td>Gagal memuat data</td></tr>";
+      });
+  </script>
+</body>
+</html>
