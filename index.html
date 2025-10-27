@@ -107,18 +107,21 @@
         const td = document.createElement("td");
         td.textContent = value;
 
-        // Kolom L (index 9 dari C–M) = Kendala
-        // Kolom K (index 8 dari C–M) = PS
-        if (!isNaN(value) && value.trim() !== "") {
-          if (colIndex === 9) {
-            td.classList.add("clickable");
-            td.addEventListener("click", () =>
-              showDetail("KENDALA", value)
-            );
-          } else if (colIndex === 8) {
-            td.classList.add("clickable");
-            td.addEventListener("click", () => showDetail("PS", value));
-          }
+        // kolom H–M di das_provi = index 5–11 dari slice C–M
+        const statusMap = {
+          5: "SURVEY",
+          6: "TARIK DC",
+          7: "SUDAH SC",
+          8: "PS",
+          9: "KENDALA",
+          10: "SISA WO",
+        };
+
+        if (!isNaN(value) && value.trim() !== "" && statusMap[colIndex]) {
+          td.classList.add("clickable");
+          td.addEventListener("click", () =>
+            showDetail(statusMap[colIndex], value)
+          );
         }
 
         tr.appendChild(td);
@@ -130,22 +133,42 @@
   async function showDetail(type, value) {
     const data = await fetchCSV(SHEET_PROVI);
     const headers = data[0];
-    const STATUS_WO_INDEX = 7; // kolom H (index ke-7)
+    const STATUS_WO_INDEX = 7; // kolom H di Provi_spa
 
     let filtered = [];
 
-    if (type === "PS") {
-      filtered = data.filter(
-        (row) => (row[STATUS_WO_INDEX] || "").trim() === "PS"
-      );
-    } else if (type === "KENDALA") {
-      filtered = data.filter((row) =>
-        ["Kendala Jaringan", "Kendala Pelanggan"].includes(
-          (row[STATUS_WO_INDEX] || "").trim()
-        )
-      );
+    switch (type) {
+      case "SURVEY":
+      case "TARIK DC":
+      case "SUDAH SC":
+      case "PS":
+        filtered = data.filter(
+          (row) => (row[STATUS_WO_INDEX] || "").trim().toUpperCase() === type
+        );
+        break;
+      case "KENDALA":
+        filtered = data.filter((row) =>
+          ["KENDALA JARINGAN", "KENDALA PELANGGAN"].includes(
+            (row[STATUS_WO_INDEX] || "").trim().toUpperCase()
+          )
+        );
+        break;
+      case "SISA WO":
+        filtered = data.filter((row) => {
+          const status = (row[STATUS_WO_INDEX] || "").trim().toUpperCase();
+          return ![
+            "PS",
+            "BAI",
+            "KENDALA JARINGAN",
+            "KENDALA PELANGGAN",
+          ].includes(status);
+        });
+        break;
+      default:
+        filtered = [];
     }
 
+    // tampilkan hasil
     const detailContainer = document.getElementById("detailContainer");
     const detailHead = document.querySelector("#detailTable thead");
     const detailBody = document.querySelector("#detailTable tbody");
