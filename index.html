@@ -70,56 +70,55 @@
     </table>
   </div>
 
-  <script>
-    const SHEET_MAIN = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1651389267&single=true&output=csv";
-    const SHEET_PROVI = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1451848426&single=true&output=csv";
+ <script>
+  const SHEET_MAIN = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1651389267&single=true&output=csv";
+  const SHEET_PROVI = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1451848426&single=true&output=csv";
 
-    async function fetchCSV(url) {
-      const res = await fetch(url);
-      const text = await res.text();
-      return Papa.parse(text.trim(), { header: true }).data;
-    }
+  async function fetchCSV(url) {
+    const res = await fetch(url);
+    const text = await res.text();
+    return Papa.parse(text.trim(), { header: true }).data;
+  }
 
-    async function loadMainTable() {
-      const data = await fetchCSV(SHEET_MAIN);
-      const tableHead = document.querySelector("#mainTable thead");
-      const tableBody = document.querySelector("#mainTable tbody");
+  async function loadMainTable() {
+    const data = await fetchCSV(SHEET_MAIN);
+    const tableHead = document.querySelector("#mainTable thead");
+    const tableBody = document.querySelector("#mainTable tbody");
 
-      // Header
-      tableHead.innerHTML = "<tr>" + Object.keys(data[0]).map(h => `<th>${h}</th>`).join('') + "</tr>";
+    // Header
+    tableHead.innerHTML = "<tr>" + Object.keys(data[0]).map(h => `<th>${h}</th>`).join('') + "</tr>";
 
-      // Body
-      tableBody.innerHTML = "";
-      data.forEach(row => {
-        const tr = document.createElement("tr");
-        Object.entries(row).forEach(([key, value]) => {
-          const td = document.createElement("td");
-          td.textContent = value;
-          if (!isNaN(value) && value.trim() !== "") {
-            td.classList.add("clickable");
-            td.addEventListener("click", () => showDetail(key, value));
-          }
-          tr.appendChild(td);
-        });
-        tableBody.appendChild(tr);
+    // Body
+    tableBody.innerHTML = "";
+    data.forEach(row => {
+      const tr = document.createElement("tr");
+      Object.entries(row).forEach(([key, value]) => {
+        const td = document.createElement("td");
+        td.textContent = value;
+        // Biar hanya kolom angka yang bisa diklik
+        if (!isNaN(value) && value.trim() !== "") {
+          td.classList.add("clickable");
+          td.addEventListener("click", () => showDetail(key, value));
+        }
+        tr.appendChild(td);
       });
-    }
+      tableBody.appendChild(tr);
+    });
+  }
 
-    async function showDetail(column, value) {
-      const data = await fetchCSV(SHEET_PROVI);
-      const filtered = data.filter(row => Object.values(row).some(v => v.includes(value)));
+  async function showDetail(column, value) {
+    const data = await fetchCSV(SHEET_PROVI);
+    const filtered = data.filter(row => Object.values(row).some(v => v.includes(value)));
 
-      const detailContainer = document.getElementById("detailContainer");
-      const detailHead = document.querySelector("#detailTable thead");
-      const detailBody = document.querySelector("#detailTable tbody");
+    const detailContainer = document.getElementById("detailContainer");
+    const detailHead = document.querySelector("#detailTable thead");
+    const detailBody = document.querySelector("#detailTable tbody");
 
-      if (filtered.length === 0) {
-        detailContainer.style.display = "block";
-        detailHead.innerHTML = "";
-        detailBody.innerHTML = `<tr><td>Tidak ada data detail untuk nilai: <b>${value}</b></td></tr>`;
-        return;
-      }
-
+    if (filtered.length === 0) {
+      detailContainer.style.display = "block";
+      detailHead.innerHTML = "";
+      detailBody.innerHTML = `<tr><td>Tidak ada data detail untuk nilai: <b>${value}</b></td></tr>`;
+    } else {
       detailContainer.style.display = "block";
       detailHead.innerHTML = "<tr>" + Object.keys(filtered[0]).map(h => `<th>${h}</th>`).join('') + "</tr>";
       detailBody.innerHTML = filtered
@@ -127,11 +126,15 @@
         .join('');
     }
 
-    // Load Papa Parse library
-    const papaScript = document.createElement("script");
-    papaScript.src = "https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js";
-    papaScript.onload = loadMainTable;
-    document.body.appendChild(papaScript);
-  </script>
+    // 🔥 Auto scroll ke bagian detail
+    detailContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // Load Papa Parse library
+  const papaScript = document.createElement("script");
+  papaScript.src = "https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js";
+  papaScript.onload = loadMainTable;
+  document.body.appendChild(papaScript);
+</script>
 </body>
 </html>
