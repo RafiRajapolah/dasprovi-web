@@ -6,6 +6,50 @@
   <title>DAS PROVI Dashboard</title>
   <style>
     body {
+       margin: 0;
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  background: #f4f6f8;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 220px;
+  background-color: #0a4275;
+  color: white;
+  height: 100vh;
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  padding-top: 20px;
+}
+
+.sidebar h2 {
+  text-align: center;
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.sidebar a {
+  color: white;
+  text-decoration: none;
+  padding: 12px 20px;
+  display: block;
+  transition: background 0.2s;
+}
+
+.sidebar a:hover,
+.sidebar a.active {
+  background: #145dbf;
+  border-left: 4px solid #fff;
+}
+
+/* Konten utama */
+.content {
+  margin-left: 220px;
+  padding: 20px;
+  flex: 1;
+}
       font-family: "Segoe UI", sans-serif;
       margin: 20px;
       background: #f5f7fa;
@@ -61,7 +105,24 @@
   </style>
 </head>
 <body>
-  <h1>DAS PROVI Dashboard</h1>
+  <h1>Dashboard Provisioning</h1>
+  <!-- SIDEBAR KIRI -->
+  <div class="sidebar">
+    <h2>📊 Dashboard</h2>
+    <a href="index.html" class="active">🏠 Das Provi</a>
+    <a href="provi_spa.html">📋 Provi SPA</a>
+    <a href="das_monet.html">💰 Monet</a>
+  </div>
+
+  <!-- KONTEN UTAMA -->
+  <div class="content">
+    <!-- 🧩 Pindahkan semua tampilan kamu yang lama ke dalam sini -->
+    <div id="tableContainer"></div>
+    <div id="detailContainer"></div>
+
+    <!-- Script JavaScript kamu tetap di bawah -->
+    <script src="script.js"></script>
+  </div>
 
   <table id="mainTable">
     <thead></thead>
