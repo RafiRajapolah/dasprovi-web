@@ -77,75 +77,96 @@
   </div>
 
   <script>
-    const SHEET_MAIN = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1651389267&single=true&output=csv";
-    const SHEET_PROVI = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1451848426&single=true&output=csv";
+  const SHEET_MAIN =
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1651389267&single=true&output=csv";
+  const SHEET_PROVI =
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1451848426&single=true&output=csv";
 
-    async function fetchCSV(url) {
-      const res = await fetch(url);
-      const text = await res.text();
-      return Papa.parse(text.trim(), { header: false }).data;
-    }
+  async function fetchCSV(url) {
+    const res = await fetch(url);
+    const text = await res.text();
+    return Papa.parse(text.trim(), { header: false }).data;
+  }
 
-    async function loadMainTable() {
-      const data = await fetchCSV(SHEET_MAIN);
+  async function loadMainTable() {
+    const data = await fetchCSV(SHEET_MAIN);
+    const rows = data.slice(2, 18); // ambil baris 3–18
+    const filtered = rows.map((row) => row.slice(2, 13)); // kolom C–M
 
-      // Ambil baris 3–18 dan kolom C–M (index 2–12)
-      const rows = data.slice(2, 18); // baris ke-3 s.d 18
-      const filtered = rows.map(row => row.slice(2, 13)); // kolom C–M
+    const tableHead = document.querySelector("#mainTable thead");
+    const tableBody = document.querySelector("#mainTable tbody");
 
-      const tableHead = document.querySelector("#mainTable thead");
-      const tableBody = document.querySelector("#mainTable tbody");
+    const headers = filtered[0];
+    tableHead.innerHTML =
+      "<tr>" + headers.map((h) => `<th>${h}</th>`).join("") + "</tr>";
 
-      // Header dari baris pertama di range (baris ke-3)
-      const headers = filtered[0];
-      tableHead.innerHTML = "<tr>" + headers.map(h => `<th>${h}</th>`).join("") + "</tr>";
+    tableBody.innerHTML = "";
+    filtered.slice(1).forEach((row) => {
+      const tr = document.createElement("tr");
+      row.forEach((value, colIndex) => {
+        const td = document.createElement("td");
+        td.textContent = value;
 
-      // Data isi
-      tableBody.innerHTML = "";
-      filtered.slice(1).forEach(row => {
-        const tr = document.createElement("tr");
-        row.forEach(value => {
-          const td = document.createElement("td");
-          td.textContent = value;
-          if (!isNaN(value) && value.trim() !== "") {
+        // Kolom L (index 9 dari C–M) = Kendala
+        // Kolom K (index 8 dari C–M) = PS
+        if (!isNaN(value) && value.trim() !== "") {
+          if (colIndex === 9) {
             td.classList.add("clickable");
-            td.addEventListener("click", () => showDetail(value));
+            td.addEventListener("click", () =>
+              showDetail("KENDALA", value)
+            );
+          } else if (colIndex === 8) {
+            td.classList.add("clickable");
+            td.addEventListener("click", () => showDetail("PS", value));
           }
-          tr.appendChild(td);
-        });
-        tableBody.appendChild(tr);
+        }
+
+        tr.appendChild(td);
       });
+      tableBody.appendChild(tr);
+    });
+  }
+
+  async function showDetail(type, value) {
+    const data = await fetchCSV(SHEET_PROVI);
+    const headers = data[0];
+    const STATUS_WO_INDEX = 7; // kolom H (index ke-7)
+
+    let filtered = [];
+
+    if (type === "PS") {
+      filtered = data.filter(
+        (row) => (row[STATUS_WO_INDEX] || "").trim() === "PS"
+      );
+    } else if (type === "KENDALA") {
+      filtered = data.filter((row) =>
+        ["Kendala Jaringan", "Kendala Pelanggan"].includes(
+          (row[STATUS_WO_INDEX] || "").trim()
+        )
+      );
     }
 
-    async function showDetail(value) {
-      const data = await fetchCSV(SHEET_PROVI);
-      const filtered = data.filter(row => row.some(v => v.includes(value)));
+    const detailContainer = document.getElementById("detailContainer");
+    const detailHead = document.querySelector("#detailTable thead");
+    const detailBody = document.querySelector("#detailTable tbody");
 
-      const detailContainer = document.getElementById("detailContainer");
-      const detailHead = document.querySelector("#detailTable thead");
-      const detailBody = document.querySelector("#detailTable tbody");
+    detailHead.innerHTML =
+      "<tr>" + headers.map((h) => `<th>${h}</th>`).join("") + "</tr>";
 
-      if (filtered.length === 0) {
-        detailHead.innerHTML = "";
-        detailBody.innerHTML = `<tr><td>Tidak ada data untuk: <b>${value}</b></td></tr>`;
-      } else {
-        detailHead.innerHTML = "<tr>" + filtered[0].map(h => `<th>${h}</th>`).join("") + "</tr>";
-        detailBody.innerHTML = filtered
-          .slice(1)
-          .map(row => `<tr>${row.map(v => `<td>${v}</td>`).join("")}</tr>`)
-          .join("");
-      }
+    detailBody.innerHTML = filtered
+      .slice(1)
+      .map((row) => `<tr>${row.map((v) => `<td>${v}</td>`).join("")}</tr>`)
+      .join("");
 
-      // Tampilkan dan scroll ke bawah
-      detailContainer.classList.add("active");
-      detailContainer.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+    detailContainer.classList.add("active");
+    detailContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
-    // Load PapaParse lalu tampilkan tabel utama
-    const papaScript = document.createElement("script");
-    papaScript.src = "https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js";
-    papaScript.onload = loadMainTable;
-    document.body.appendChild(papaScript);
-  </script>
+  const papaScript = document.createElement("script");
+  papaScript.src =
+    "https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js";
+  papaScript.onload = loadMainTable;
+  document.body.appendChild(papaScript);
+</script>
 </body>
 </html>
