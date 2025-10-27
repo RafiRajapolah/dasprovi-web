@@ -3,123 +3,109 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard Productivity SPA</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <title>📊 Productivity Teknisi Provisioning SA Singaparna</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f5f7f8; margin: 0; padding: 20px; }
+    h1 { text-align: center; color: #222; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; background: white; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+    th { background-color: #1a5632; color: white; }
+    tr:nth-child(even) { background-color: #f2f2f2; }
+    td.clickable { color: blue; cursor: pointer; text-decoration: underline; }
+    #detail-container { margin-top: 30px; display: none; }
+  </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body>
 
-  <div class="container mx-auto p-6">
-    <h1 class="text-2xl font-bold mb-4 text-center">📊 Productivity Teknisi Provisioning SA Singaparna</h1>
+  <h1>📊 Productivity Teknisi Provisioning SA Singaparna</h1>
 
-    <!-- 🔹 Tabel utama -->
-    <div class="overflow-x-auto shadow-md rounded-lg bg-white">
-      <table id="mainTable" class="min-w-full border-collapse">
-        <thead class="bg-blue-600 text-white">
-          <tr id="tableHeader"></tr>
-        </thead>
-        <tbody id="tableBody" class="divide-y divide-gray-200"></tbody>
-      </table>
-    </div>
-
-    <!-- 🔹 Tempat menampilkan detail ketika angka diklik -->
-    <div id="detailSection" class="mt-6 hidden">
-      <h2 class="text-xl font-semibold mb-2">📋 Detail Data</h2>
-      <div id="detailTableWrapper" class="overflow-x-auto bg-white rounded-lg shadow-md p-4"></div>
-    </div>
+  <table id="main-table"></table>
+  <div id="detail-container">
+    <h2>🔍 Detail Data dari Sheet <b>Provi_spa</b></h2>
+    <table id="detail-table"></table>
   </div>
 
-  <!-- ================================================== -->
-  <!-- 🔻 BAGIAN JAVASCRIPT -->
-  <!-- ================================================== -->
   <script>
-  // URL sheet Provi_spa (export CSV)
-  const SHEET_PROVI = "https://docs.google.com/spreadsheets/d/e/2PACX-1vXXXXXXXXXXXXXX/pub?gid=123456789&single=true&output=csv";
-  // ⚠️ Ganti URL di atas dengan URL CSV sheet kamu
+    const SHEET_MAIN = "https://docs.google.com/spreadsheets/d/1u7sHZTiuVvw9l1OHethOqi2lGhO-9c09ieN2Rvwye1w/edit?gid=1651389267#gid=1651389267&single=true&output=csv";
+    const SHEET_PROVI = "https://docs.google.com/spreadsheets/d/1u7sHZTiuVvw9l1OHethOqi2lGhO-9c09ieN2Rvwye1w/edit?gid=1451848426#gid=1451848426&single=true&output=csv";
 
-  // Fungsi ambil data CSV + bisa lewati baris awal
-  async function fetchCSV(url, skipRows = 0) {
-    const res = await fetch(url);
-    const text = await res.text();
-    const rows = text.trim().split("\n").map(r => r.split(","));
-    return rows.slice(skipRows); // lewati baris kosong/judul
-  }
-
-  // Fungsi untuk load tabel utama
-  async function loadMainTable() {
-    const rows = await fetchCSV(SHEET_PROVI, 2); // header di baris ke-3
-    const header = rows[0];
-    const data = rows.slice(1);
-
-    const headerRow = document.getElementById("tableHeader");
-    const body = document.getElementById("tableBody");
-    headerRow.innerHTML = "";
-    body.innerHTML = "";
-
-    // buat header
-    header.forEach(h => {
-      const th = document.createElement("th");
-      th.className = "px-3 py-2 border text-sm text-center";
-      th.textContent = h;
-      headerRow.appendChild(th);
-    });
-
-    // buat isi tabel
-    data.forEach((row, i) => {
-      const tr = document.createElement("tr");
-      tr.className = "hover:bg-blue-50";
-
-      row.forEach((cell, j) => {
-        const td = document.createElement("td");
-        td.className = "px-3 py-2 border text-sm text-center";
-
-        // kalau angka dan bukan header "TEKNISI" → buat clickable
-        if (j > 0 && cell && !isNaN(cell)) {
-          td.innerHTML = `<button class="text-blue-600 hover:underline font-semibold" onclick="showDetail('${header[j]}', '${row[0]}')">${cell}</button>`;
-        } else {
-          td.textContent = cell;
-        }
-        tr.appendChild(td);
-      });
-      body.appendChild(tr);
-    });
-  }
-
-  // Fungsi tampilkan detail berdasarkan header dan teknisi
-  async function showDetail(category, teknisi) {
-    // Ambil sheet detail (kalau sheet Provi_spa juga yang dipakai, bisa pakai SHEET_PROVI)
-    const rows = await fetchCSV(SHEET_PROVI, 2);
-    const header = rows[0];
-    const data = rows.slice(1);
-
-    // Contoh filter sederhana (nanti bisa ubah sesuai kebutuhan)
-    const filtered = data.filter(r => r[0] === teknisi && r.includes(category));
-
-    const detailSection = document.getElementById("detailSection");
-    const wrapper = document.getElementById("detailTableWrapper");
-
-    if (filtered.length === 0) {
-      wrapper.innerHTML = `<p class="text-gray-500">Tidak ada data detail untuk ${teknisi} - ${category}</p>`;
-      detailSection.classList.remove("hidden");
-      return;
+    async function fetchCSV(url) {
+      const response = await fetch(url);
+      const text = await response.text();
+      return text.split('\n').map(r => r.split(','));
     }
 
-    // Buat tabel detail
-    let html = `<table class="min-w-full border border-gray-300">
-      <thead class="bg-gray-100">
-        <tr>${header.map(h => `<th class="px-3 py-2 border text-sm">${h}</th>`).join("")}</tr>
-      </thead>
-      <tbody>
-        ${filtered.map(r => `<tr>${r.map(c => `<td class="px-3 py-1 border text-sm">${c}</td>`).join("")}</tr>`).join("")}
-      </tbody>
-    </table>`;
+    async function renderMainTable() {
+      const rows = await fetchCSV(SHEET_MAIN);
+      const table = document.getElementById('main-table');
+      table.innerHTML = "";
 
-    wrapper.innerHTML = html;
-    detailSection.classList.remove("hidden");
-    window.scrollTo({ top: detailSection.offsetTop, behavior: "smooth" });
-  }
+      const thead = document.createElement('thead');
+      const tbody = document.createElement('tbody');
+      const headerRow = document.createElement('tr');
+      rows[2].forEach(h => { // header mulai baris ke-3
+        const th = document.createElement('th');
+        th.textContent = h.trim();
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
 
-  // Jalankan saat halaman dibuka
-  loadMainTable();
+      rows.slice(3).forEach((r, i) => {
+        if (!r[0]) return;
+        const tr = document.createElement('tr');
+        r.forEach((cell, j) => {
+          const td = document.createElement('td');
+          td.textContent = cell.trim();
+          if (/^\d+$/.test(cell.trim()) && parseInt(cell.trim()) > 0) {
+            td.classList.add("clickable");
+            td.onclick = () => showDetail(r[0]);
+          }
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+
+      table.appendChild(thead);
+      table.appendChild(tbody);
+    }
+
+    async function showDetail(technicianName) {
+      const rows = await fetchCSV(SHEET_PROVI);
+      const table = document.getElementById("detail-table");
+      const container = document.getElementById("detail-container");
+      container.style.display = "block";
+
+      const headers = rows[0];
+      table.innerHTML = "";
+
+      const thead = document.createElement("thead");
+      const headerRow = document.createElement("tr");
+      headers.forEach(h => {
+        const th = document.createElement("th");
+        th.textContent = h.trim();
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
+
+      const tbody = document.createElement("tbody");
+      rows.slice(1).forEach(r => {
+        if (r[4] && r[4].includes(technicianName)) {
+          const tr = document.createElement("tr");
+          r.forEach(c => {
+            const td = document.createElement("td");
+            td.textContent = c.trim();
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        }
+      });
+
+      table.appendChild(thead);
+      table.appendChild(tbody);
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    renderMainTable();
   </script>
 
 </body>
