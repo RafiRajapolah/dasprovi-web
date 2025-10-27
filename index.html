@@ -13,7 +13,10 @@
     padding: 20px;
   }
 
-  h1 { text-align: center; }
+  h1 {
+    text-align: center;
+    color: #2e7d32;
+  }
 
   table {
     width: 100%;
@@ -35,11 +38,16 @@
     border: 1px solid #eee;
     padding: 8px;
     text-align: center;
-    cursor: pointer;
   }
 
   tr:nth-child(even) { background: #f9f9f9; }
   tr:hover { background: #e8f5e9; }
+
+  td.clickable {
+    color: #1565c0;
+    font-weight: bold;
+    cursor: pointer;
+  }
 
   #detail {
     margin-top: 25px;
@@ -69,7 +77,7 @@
 <table id="data"></table>
 
 <div id="detail">
-  <h3>Detail Data</h3>
+  <h3>Detail Data dari Sheet: Provi_spa</h3>
   <table id="detailTable"></table>
 </div>
 
@@ -85,18 +93,22 @@ const urlDetail = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx
 
 let detailData = [];
 
+// 🔹 Load data detail (Provi_spa)
 fetch(urlDetail)
   .then(res => res.text())
   .then(csv => {
     detailData = csv.split("\n").map(r => r.split(","));
   });
 
+// 🔹 Load data utama (das_provi)
 fetch(urlMain)
   .then(res => res.text())
   .then(csv => {
     const rows = csv.split("\n").map(r => r.split(","));
     const table = document.getElementById("data");
-    const filteredRows = rows.slice(4); // skip header 1-4
+
+    // skip header baris 1-4
+    const filteredRows = rows.slice(4);
 
     const headers = [
       "TEKNISI","TSEL AO","TSEL MO",
@@ -125,10 +137,9 @@ fetch(urlMain)
         const td = document.createElement("td");
         td.textContent = val.replace(/(^"|"$)/g, "");
 
-        // hanya kolom angka yang bisa diklik
+        // 🔹 Klik hanya kolom angka
         if (i > 0 && val.trim() !== "" && !isNaN(val)) {
-          td.style.color = "#1565c0";
-          td.style.fontWeight = "600";
+          td.classList.add("clickable");
           td.addEventListener("click", () => showDetail(row[0], headers[i]));
         }
 
@@ -139,12 +150,13 @@ fetch(urlMain)
     table.appendChild(tbody);
   });
 
+// 🔹 Fungsi tampilkan detail
 function showDetail(teknisi, kategori) {
   const detailDiv = document.getElementById("detail");
   const detailTable = document.getElementById("detailTable");
   detailTable.innerHTML = "";
 
-  // filter berdasarkan teknisi atau kategori (bisa kamu sesuaikan)
+  // Filter berdasarkan teknisi
   const filtered = detailData.filter(r =>
     r.some(c => c.toLowerCase().includes(teknisi.toLowerCase()))
   );
@@ -155,19 +167,21 @@ function showDetail(teknisi, kategori) {
     return;
   }
 
-  const header = document.createElement("tr");
+  // header
+  const headerRow = document.createElement("tr");
   filtered[0].forEach(h => {
     const th = document.createElement("th");
     th.textContent = h.replace(/(^"|"$)/g, "");
-    header.appendChild(th);
+    headerRow.appendChild(th);
   });
-  detailTable.appendChild(header);
+  detailTable.appendChild(headerRow);
 
-  filtered.slice(1, 10).forEach(r => { // batas 10 baris
+  // isi data (max 20 baris biar gak kepanjangan)
+  filtered.slice(1, 20).forEach(r => {
     const tr = document.createElement("tr");
-    r.forEach(val => {
+    r.forEach(v => {
       const td = document.createElement("td");
-      td.textContent = val.replace(/(^"|"$)/g, "");
+      td.textContent = v.replace(/(^"|"$)/g, "");
       tr.appendChild(td);
     });
     detailTable.appendChild(tr);
