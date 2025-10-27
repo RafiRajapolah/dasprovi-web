@@ -49,13 +49,14 @@
     cursor: pointer;
   }
 
+  /* 🔹 Sembunyikan area detail dari awal */
   #detail {
     margin-top: 25px;
     padding: 15px;
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 3px 8px rgba(0,0,0,0.05);
-    display: none;
+    display: none; /* inilah yang menyembunyikan */
   }
 
   #detail h3 {
@@ -76,7 +77,8 @@
 <h1>📊 Data dari Sheet: das_provi</h1>
 <table id="data"></table>
 
-<div id="detail">
+<!-- 🔹 Area detail, disembunyikan dulu -->
+<div id="detail" style="display:none;">
   <h3>Detail Data dari Sheet: Provi_spa</h3>
   <table id="detailTable"></table>
 </div>
@@ -93,22 +95,21 @@ const urlDetail = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx
 
 let detailData = [];
 
-// 🔹 Load data detail (Provi_spa)
+// 🔹 Muat data dari Provi_spa
 fetch(urlDetail)
   .then(res => res.text())
   .then(csv => {
     detailData = csv.split("\n").map(r => r.split(","));
   });
 
-// 🔹 Load data utama (das_provi)
+// 🔹 Muat data dari das_provi
 fetch(urlMain)
   .then(res => res.text())
   .then(csv => {
     const rows = csv.split("\n").map(r => r.split(","));
     const table = document.getElementById("data");
 
-    // skip header baris 1-4
-    const filteredRows = rows.slice(4);
+    const filteredRows = rows.slice(4); // skip baris header 1–4
 
     const headers = [
       "TEKNISI","TSEL AO","TSEL MO",
@@ -137,7 +138,7 @@ fetch(urlMain)
         const td = document.createElement("td");
         td.textContent = val.replace(/(^"|"$)/g, "");
 
-        // 🔹 Klik hanya kolom angka
+        // hanya kolom angka yang bisa diklik
         if (i > 0 && val.trim() !== "" && !isNaN(val)) {
           td.classList.add("clickable");
           td.addEventListener("click", () => showDetail(row[0], headers[i]));
@@ -154,15 +155,19 @@ fetch(urlMain)
 function showDetail(teknisi, kategori) {
   const detailDiv = document.getElementById("detail");
   const detailTable = document.getElementById("detailTable");
+
+  // bersihkan isi lama
   detailTable.innerHTML = "";
 
-  // Filter berdasarkan teknisi
+  // filter berdasarkan teknisi
   const filtered = detailData.filter(r =>
     r.some(c => c.toLowerCase().includes(teknisi.toLowerCase()))
   );
 
+  // tampilkan area detail
+  detailDiv.style.display = "block";
+
   if (filtered.length === 0) {
-    detailDiv.style.display = "block";
     detailTable.innerHTML = `<tr><td>Tidak ada detail untuk ${teknisi} (${kategori})</td></tr>`;
     return;
   }
@@ -176,7 +181,7 @@ function showDetail(teknisi, kategori) {
   });
   detailTable.appendChild(headerRow);
 
-  // isi data (max 20 baris biar gak kepanjangan)
+  // isi data (maksimal 20 baris)
   filtered.slice(1, 20).forEach(r => {
     const tr = document.createElement("tr");
     r.forEach(v => {
@@ -187,7 +192,7 @@ function showDetail(teknisi, kategori) {
     detailTable.appendChild(tr);
   });
 
-  detailDiv.style.display = "block";
+  // gulir otomatis ke bawah
   detailDiv.scrollIntoView({ behavior: "smooth" });
 }
 </script>
