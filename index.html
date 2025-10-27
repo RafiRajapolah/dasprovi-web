@@ -6,58 +6,86 @@
   <title>DAS PROVI Dashboard</title>
   <style>
     body {
-       margin: 0;
-  font-family: "Poppins", sans-serif;
-  display: flex;
-  background: #f4f6f8;
-}
-
-/* Sidebar */
-.sidebar {
-  width: 220px;
-  background-color: #0a4275;
-  color: white;
-  height: 100vh;
-  position: fixed;
-  display: flex;
-  flex-direction: column;
-  padding-top: 20px;
-}
-
-.sidebar h2 {
-  text-align: center;
-  font-size: 18px;
-  margin-bottom: 20px;
-}
-
-.sidebar a {
-  color: white;
-  text-decoration: none;
-  padding: 12px 20px;
-  display: block;
-  transition: background 0.2s;
-}
-
-.sidebar a:hover,
-.sidebar a.active {
-  background: #145dbf;
-  border-left: 4px solid #fff;
-}
-
-/* Konten utama */
-.content {
-  margin-left: 220px;
-  padding: 20px;
-  flex: 1;
-}
-      font-family: "Segoe UI", sans-serif;
-      margin: 20px;
-      background: #f5f7fa;
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      display: flex;
+      background: #f4f6f8;
+      transition: all 0.3s ease;
     }
-    h1 {
+
+    /* Tombol toggle sidebar */
+    .menu-btn {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      background: #0a4275;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 18px;
+      z-index: 1001;
+      transition: background 0.3s;
+    }
+    .menu-btn:hover {
+      background: #145dbf;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background-color: #0a4275;
+      color: white;
+      height: 100vh;
+      position: fixed;
+      left: -220px;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      padding-top: 60px;
+      transition: left 0.3s ease;
+      z-index: 1000;
+    }
+
+    .sidebar.active {
+      left: 0;
+    }
+
+    .sidebar h2 {
       text-align: center;
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      padding: 12px 20px;
+      display: block;
+      transition: background 0.2s;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: #145dbf;
+      border-left: 4px solid #fff;
+    }
+
+    /* Konten utama */
+    .content {
+      flex: 1;
+      margin: 0 auto;
+      padding: 80px 20px 20px;
+      text-align: center;
+      max-width: 1200px;
+      transition: margin-left 0.3s ease;
+    }
+
+    h1 {
       color: #333;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -105,9 +133,11 @@
   </style>
 </head>
 <body>
-  <h1>Dashboard Provisioning</h1>
+  <!-- Tombol buka sidebar -->
+  <button class="menu-btn" id="menuBtn">☰</button>
+
   <!-- SIDEBAR KIRI -->
-  <div class="sidebar">
+  <div class="sidebar" id="sidebar">
     <h2>📊 Dashboard</h2>
     <a href="index.html" class="active">🏠 Das Provi</a>
     <a href="provi_spa.html">📋 Provi SPA</a>
@@ -116,28 +146,31 @@
 
   <!-- KONTEN UTAMA -->
   <div class="content">
-    <!-- 🧩 Pindahkan semua tampilan kamu yang lama ke dalam sini -->
-    <div id="tableContainer"></div>
-    <div id="detailContainer"></div>
-
-    <!-- Script JavaScript kamu tetap di bawah -->
-    <script src="script.js"></script>
-  </div>
-
-  <table id="mainTable">
-    <thead></thead>
-    <tbody></tbody>
-  </table>
-
-  <div id="detailContainer">
-    <h2>Detail Data</h2>
-    <table id="detailTable">
+    <h1>Dashboard Provisioning</h1>
+    <table id="mainTable">
       <thead></thead>
       <tbody></tbody>
     </table>
+
+    <div id="detailContainer">
+      <h2>Detail Data</h2>
+      <table id="detailTable">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </div>
 
   <script>
+  // === SIDEBAR TOGGLE ===
+  const menuBtn = document.getElementById("menuBtn");
+  const sidebar = document.getElementById("sidebar");
+
+  menuBtn.addEventListener("click", () => {
+    sidebar.classList.toggle("active");
+  });
+
+  // === DATA GOOGLE SHEETS ===
   const SHEET_MAIN =
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1651389267&single=true&output=csv";
   const SHEET_PROVI =
@@ -168,7 +201,6 @@
         const td = document.createElement("td");
         td.textContent = value;
 
-        // kolom H–M di das_provi = index 5–11 dari slice C–M
         const statusMap = {
           5: "SURVEY",
           6: "TARIK DC",
@@ -229,7 +261,6 @@
         filtered = [];
     }
 
-    // tampilkan hasil
     const detailContainer = document.getElementById("detailContainer");
     const detailHead = document.querySelector("#detailTable thead");
     const detailBody = document.querySelector("#detailTable tbody");
@@ -251,6 +282,6 @@
     "https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js";
   papaScript.onload = loadMainTable;
   document.body.appendChild(papaScript);
-</script>
+  </script>
 </body>
 </html>
