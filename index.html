@@ -3,110 +3,135 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>📊 Productivity Teknisi Provisioning SA Singaparna</title>
+  <title>DAS PROVI Dashboard</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f5f7f8; margin: 0; padding: 20px; }
-    h1 { text-align: center; color: #222; }
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; background: white; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-    th { background-color: #1a5632; color: white; }
-    tr:nth-child(even) { background-color: #f2f2f2; }
-    td.clickable { color: blue; cursor: pointer; text-decoration: underline; }
-    #detail-container { margin-top: 30px; display: none; }
+    body {
+      font-family: "Segoe UI", sans-serif;
+      margin: 20px;
+      background: #f5f7fa;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+    }
+    th {
+      background: #007bff;
+      color: white;
+      text-transform: uppercase;
+    }
+    tr:hover {
+      background: #f0f8ff;
+    }
+    td.clickable {
+      color: #007bff;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    #detailContainer {
+      margin-top: 30px;
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      display: none;
+    }
+    #detailContainer h2 {
+      margin-top: 0;
+      color: #007bff;
+    }
   </style>
 </head>
 <body>
+  <h1>DAS PROVI Dashboard</h1>
 
-  <h1>📊 Productivity Teknisi Provisioning SA Singaparna</h1>
+  <table id="mainTable">
+    <thead></thead>
+    <tbody></tbody>
+  </table>
 
-  <table id="main-table"></table>
-  <div id="detail-container">
-    <h2>🔍 Detail Data dari Sheet <b>Provi_spa</b></h2>
-    <table id="detail-table"></table>
+  <div id="detailContainer">
+    <h2>Detail Data</h2>
+    <table id="detailTable">
+      <thead></thead>
+      <tbody></tbody>
+    </table>
   </div>
 
   <script>
-    const SHEET_MAIN = "https://docs.google.com/spreadsheets/d/1u7sHZTiuVvw9l1OHethOqi2lGhO-9c09ieN2Rvwye1w/edit?gid=1651389267#gid=1651389267&single=true&output=csv";
-    const SHEET_PROVI = "https://docs.google.com/spreadsheets/d/1u7sHZTiuVvw9l1OHethOqi2lGhO-9c09ieN2Rvwye1w/edit?gid=1451848426#gid=1451848426&single=true&output=csv";
+    const SHEET_MAIN = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1651389267&single=true&output=csv";
+    const SHEET_PROVI = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1451848426&single=true&output=csv";
 
     async function fetchCSV(url) {
-      const response = await fetch(url);
-      const text = await response.text();
-      return text.split('\n').map(r => r.split(','));
+      const res = await fetch(url);
+      const text = await res.text();
+      return Papa.parse(text.trim(), { header: true }).data;
     }
 
-    async function renderMainTable() {
-      const rows = await fetchCSV(SHEET_MAIN);
-      const table = document.getElementById('main-table');
-      table.innerHTML = "";
+    async function loadMainTable() {
+      const data = await fetchCSV(SHEET_MAIN);
+      const tableHead = document.querySelector("#mainTable thead");
+      const tableBody = document.querySelector("#mainTable tbody");
 
-      const thead = document.createElement('thead');
-      const tbody = document.createElement('tbody');
-      const headerRow = document.createElement('tr');
-      rows[2].forEach(h => { // header mulai baris ke-3
-        const th = document.createElement('th');
-        th.textContent = h.trim();
-        headerRow.appendChild(th);
-      });
-      thead.appendChild(headerRow);
+      // Header
+      tableHead.innerHTML = "<tr>" + Object.keys(data[0]).map(h => `<th>${h}</th>`).join('') + "</tr>";
 
-      rows.slice(3).forEach((r, i) => {
-        if (!r[0]) return;
-        const tr = document.createElement('tr');
-        r.forEach((cell, j) => {
-          const td = document.createElement('td');
-          td.textContent = cell.trim();
-          if (/^\d+$/.test(cell.trim()) && parseInt(cell.trim()) > 0) {
+      // Body
+      tableBody.innerHTML = "";
+      data.forEach(row => {
+        const tr = document.createElement("tr");
+        Object.entries(row).forEach(([key, value]) => {
+          const td = document.createElement("td");
+          td.textContent = value;
+          if (!isNaN(value) && value.trim() !== "") {
             td.classList.add("clickable");
-            td.onclick = () => showDetail(r[0]);
+            td.addEventListener("click", () => showDetail(key, value));
           }
           tr.appendChild(td);
         });
-        tbody.appendChild(tr);
+        tableBody.appendChild(tr);
       });
-
-      table.appendChild(thead);
-      table.appendChild(tbody);
     }
 
-    async function showDetail(technicianName) {
-      const rows = await fetchCSV(SHEET_PROVI);
-      const table = document.getElementById("detail-table");
-      const container = document.getElementById("detail-container");
-      container.style.display = "block";
+    async function showDetail(column, value) {
+      const data = await fetchCSV(SHEET_PROVI);
+      const filtered = data.filter(row => Object.values(row).some(v => v.includes(value)));
 
-      const headers = rows[0];
-      table.innerHTML = "";
+      const detailContainer = document.getElementById("detailContainer");
+      const detailHead = document.querySelector("#detailTable thead");
+      const detailBody = document.querySelector("#detailTable tbody");
 
-      const thead = document.createElement("thead");
-      const headerRow = document.createElement("tr");
-      headers.forEach(h => {
-        const th = document.createElement("th");
-        th.textContent = h.trim();
-        headerRow.appendChild(th);
-      });
-      thead.appendChild(headerRow);
+      if (filtered.length === 0) {
+        detailContainer.style.display = "block";
+        detailHead.innerHTML = "";
+        detailBody.innerHTML = `<tr><td>Tidak ada data detail untuk nilai: <b>${value}</b></td></tr>`;
+        return;
+      }
 
-      const tbody = document.createElement("tbody");
-      rows.slice(1).forEach(r => {
-        if (r[4] && r[4].includes(technicianName)) {
-          const tr = document.createElement("tr");
-          r.forEach(c => {
-            const td = document.createElement("td");
-            td.textContent = c.trim();
-            tr.appendChild(td);
-          });
-          tbody.appendChild(tr);
-        }
-      });
-
-      table.appendChild(thead);
-      table.appendChild(tbody);
-      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      detailContainer.style.display = "block";
+      detailHead.innerHTML = "<tr>" + Object.keys(filtered[0]).map(h => `<th>${h}</th>`).join('') + "</tr>";
+      detailBody.innerHTML = filtered
+        .map(row => `<tr>${Object.values(row).map(v => `<td>${v}</td>`).join('')}</tr>`)
+        .join('');
     }
 
-    renderMainTable();
+    // Load Papa Parse library
+    const papaScript = document.createElement("script");
+    papaScript.src = "https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js";
+    papaScript.onload = loadMainTable;
+    document.body.appendChild(papaScript);
   </script>
-
 </body>
 </html>
