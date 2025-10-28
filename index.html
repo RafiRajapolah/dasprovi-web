@@ -3,88 +3,101 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>DAS PROVI — Final (Angka saja)</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <title>DAS PROVI — Premium Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg:#f4f7fb; --card:#fff; --primary:#0a58a6; --accent:#007bff; --muted:#6b7280;
-      --radius:10px; --shadow: 0 8px 24px rgba(12,40,80,0.06);
+      --bg:#0f1724; /* dark bg for premium */
+      --card:#0b1220;
+      --glass: rgba(255,255,255,0.03);
+      --primary:#1e90ff; /* bright blue */
+      --muted:#94a3b8;
+      --accent:#60a5fa;
+      --radius:14px;
+      --glass-2: rgba(255,255,255,0.02);
+      --shadow: 0 10px 40px rgba(2,6,23,0.6);
+      color-scheme: dark;
     }
     *{box-sizing:border-box}
-    body{margin:0;font-family:Poppins,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:#0b1720}
-    .container{max-width:1200px;margin:18px auto;padding:18px}
-    .top{display:flex;flex-direction:column;gap:12px;margin-bottom:12px}
-    .cards{display:flex;gap:10px;flex-wrap:wrap}
-    .card{background:var(--card);border-radius:10px;padding:12px 14px;box-shadow:var(--shadow);min-width:110px;text-align:center}
+    html,body{height:100%;margin:0;font-family:Poppins,system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#071426 0%, #081227 60%);color:#e6eefc}
+    .wrap{max-width:1300px;margin:28px auto;padding:20px}
+    .header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+    .brand{display:flex;flex-direction:column}
+    .brand h1{margin:0;font-size:20px;letter-spacing:0.2px}
+    .brand p{margin:4px 0 0 0;color:var(--muted);font-size:13px}
+    .controls{display:flex;gap:10px;align-items:center}
+    .search{display:flex;align-items:center;background:var(--glass);padding:8px 10px;border-radius:10px;backdrop-filter: blur(4px);border:1px solid rgba(255,255,255,0.02)}
+    .search input{background:transparent;border:0;outline:none;color:var(--muted);min-width:220px}
+    .btn{background:linear-gradient(90deg,var(--primary),var(--accent));border:0;padding:8px 12px;border-radius:10px;color:#04102a;cursor:pointer;font-weight:600;box-shadow:0 6px 18px rgba(30,144,255,0.12)}
+    .cards{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.015));padding:12px 16px;border-radius:12px;min-width:110px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,0.02)}
     .card .label{font-size:12px;color:var(--muted);margin-bottom:6px}
-    .card .value{font-size:18px;font-weight:700;color:var(--primary)}
-    .controls{display:flex;gap:8px;align-items:center;justify-content:flex-end}
-    .search{display:flex;align-items:center;background:#f5f7fb;border-radius:10px;padding:6px 8px}
-    .search input{border:0;background:transparent;outline:none;padding:6px 8px;min-width:200px}
-    button.btn{background:var(--primary);color:#fff;border:0;padding:8px 10px;border-radius:8px;cursor:pointer}
-    .error{display:none;background:#fff4f6;color:#b91c1c;padding:10px;border-radius:8px;margin-bottom:8px}
-    .table-wrap{overflow:auto;border-radius:8px;background:var(--card);box-shadow:var(--shadow);padding:12px}
-    table{width:100%;border-collapse:collapse;min-width:900px}
-    thead th{position:sticky;top:0;padding:10px;background:linear-gradient(180deg,var(--accent),var(--primary));color:#fff;text-transform:uppercase;font-size:12px}
-    tbody td{padding:10px;border-bottom:1px solid #eef2f7;text-align:center;font-size:13px}
-    tbody tr:hover{background:#f7fbff}
-    td.clickable{cursor:pointer}
+    .card .value{font-size:20px;font-weight:700;color:var(--primary)}
+    .panel{background:linear-gradient(180deg,var(--card), rgba(255,255,255,0.02));border-radius:14px;padding:16px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 12px 40px rgba(2,6,23,0.6)}
+    .table-wrap{overflow:auto;margin-top:6px;border-radius:10px}
+    table{width:100%;border-collapse:collapse;min-width:1000px}
+    thead th{position:sticky;top:0;padding:12px 10px;background:linear-gradient(180deg,#08243b,#07172a);color:var(--primary);font-size:12px;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,0.03)}
+    tbody td{padding:12px 10px;border-bottom:1px solid rgba(255,255,255,0.02);text-align:center;font-size:13px;color:#d7e8ff}
+    tbody tr:hover{background:linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.006))}
+    td.clickable{cursor:pointer;opacity:0.95}
     td.sisa{font-weight:700;color:var(--primary)}
-    tfoot td{padding:10px;border-top:2px solid #e6eefc;font-weight:700;text-align:center}
-    #detailContainer{margin-top:12px;display:none;background:var(--card);padding:12px;border-radius:10px;box-shadow:var(--shadow)}
-    .overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,20,40,0.18);visibility:hidden;opacity:0;transition:all .18s;z-index:9999}
+    tfoot td{padding:12px 10px;border-top:2px solid rgba(255,255,255,0.03);font-weight:700;color:#9ecbff}
+    #detailContainer{margin-top:14px;display:none}
+    .overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.6);visibility:hidden;opacity:0;transition:all .18s;z-index:9999}
     .overlay.active{visibility:visible;opacity:1}
-    .spinner{width:56px;height:56px;border-radius:50%;border:6px solid rgba(255,255,255,0.16);border-top-color:#fff;animation:spin 1s linear infinite;background:var(--primary);padding:6px}
+    .spinner{width:72px;height:72px;border-radius:50%;border:8px solid rgba(255,255,255,0.06);border-top-color:var(--primary);animation:spin 1s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
-    @media (max-width:900px){ .search input{min-width:140px} table{min-width:700px} .cards{justify-content:flex-start} }
+    .note{color:var(--muted);font-size:13px;margin-top:6px}
+    @media (max-width:1000px){ .cards{justify-content:flex-start} .search input{min-width:140px} table{min-width:900px} }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="top">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
-        <div>
-          <h2 style="margin:0;font-size:18px">DAS PROVI — Angka</h2>
-          <div style="color:var(--muted);font-size:13px;margin-top:6px">SISA WO = AO + MO + SURVEY + TARIK DC + BAI - PS + KENDALA</div>
-        </div>
-        <div class="controls">
-          <div class="search" title="Search detail">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="opacity:.8"><path d="M21 21l-4.35-4.35" stroke="#6b7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <input id="searchDetail" placeholder="Cari di detail (ketik bebas)..." aria-label="search" />
-          </div>
-          <button id="refreshBtn" class="btn">🔄 Refresh</button>
-        </div>
+  <div class="wrap">
+    <div class="header">
+      <div class="brand">
+        <h1>DAS PROVI — Premium</h1>
+        <div class="note">SISA WO = (TSEL AO + INDIBIZ AO) + (TSEL MO + INDIBIZ MO) + SURVEY + TARIK DC + BAI - PS + KENDALA</div>
       </div>
 
-      <div class="cards" id="summaryCards" aria-hidden="false">
-        <!-- Numeric cards injected here -->
+      <div class="controls">
+        <div class="search" title="Search detail">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="opacity:.9"><path d="M21 21l-4.35-4.35" stroke="#9fbbe8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <input id="searchDetail" placeholder="Cari di detail (ketik bebas)..." aria-label="search" />
+        </div>
+        <button id="refreshBtn" class="btn">🔄 Refresh</button>
       </div>
     </div>
 
-    <div id="errorBox" class="error" role="alert"></div>
+    <div id="summary" class="cards" aria-hidden="false"></div>
 
-    <div class="table-wrap" aria-live="polite">
-      <table id="mainTable" role="table" aria-label="Tabel Sisa WO">
-        <thead><tr>
-          <th>Teknisi</th>
-          <th>AO</th>
-          <th>MO</th>
-          <th>Survey</th>
-          <th>Tarik DC</th>
-          <th>BAI</th>
-          <th>PS</th>
-          <th>Kendala</th>
-          <th>SISA WO</th>
-        </tr></thead>
-        <tbody></tbody>
-        <tfoot></tfoot>
-      </table>
-    </div>
+    <div class="panel">
+      <div id="errorBox" style="display:none;background:#2b0f17;color:#ffb3b3;padding:10px;border-radius:10px;margin-bottom:12px"></div>
 
-    <div id="detailContainer" aria-live="polite">
-      <h3 style="margin-top:0">Detail Data</h3>
-      <div style="overflow:auto;max-height:360px">
-        <table id="detailTable"><thead></thead><tbody></tbody></table>
+      <div class="table-wrap">
+        <table id="mainTable" role="table">
+          <thead>
+            <tr>
+              <th>Teknisi</th>
+              <th>AO</th>
+              <th>MO</th>
+              <th>Survey</th>
+              <th>Tarik DC</th>
+              <th>BAI</th>
+              <th>PS</th>
+              <th>Kendala</th>
+              <th>SISA WO</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot></tfoot>
+        </table>
+      </div>
+
+      <div id="detailContainer" style="margin-top:14px;display:none">
+        <h3 style="margin:0 0 10px 0;color:var(--primary)">Detail (filter per teknisi + status)</h3>
+        <div style="overflow:auto;max-height:360px">
+          <table id="detailTable"><thead></thead><tbody></tbody></table>
+        </div>
       </div>
     </div>
   </div>
@@ -92,13 +105,17 @@
   <div class="overlay" id="overlay"><div class="spinner" role="status" aria-label="loading"></div></div>
 
   <script>
-  // ================== CONFIG ==================
+  // ====== CONFIG ======
   const SHEET_MAIN = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1651389267&single=true&output=csv";
   const SHEET_PROVI = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1451848426&single=true&output=csv";
-  const AUTO_REFRESH_MS = 60 * 1000; // 1 minute
-  const FETCH_TIMEOUT_MS = 15000; // 15s
+  const HEADER_ROW_INDEX = 3; // zero-based (row 4 in spreadsheet)
+  const DATA_START_ROW_INDEX = 4; // zero-based (row 5)
+  const SLICE_COL_START = 2; // C (zero-based)
+  const SLICE_COL_END = 13; // M -> slice end index (exclusive)
+  const AUTO_REFRESH_MS = 60 * 1000;
+  const FETCH_TIMEOUT_MS = 15000;
 
-  // ================== STATE ==================
+  // ====== STATE ======
   let cacheMain = null;
   let cacheProvi = null;
   let autoRefreshTimer = null;
@@ -110,63 +127,72 @@
   const detailContainer = document.getElementById('detailContainer');
   const detailThead = document.querySelector('#detailTable thead');
   const detailTbody = document.querySelector('#detailTable tbody');
-  const summaryCards = document.getElementById('summaryCards');
+  const summary = document.getElementById('summary');
+  const searchInput = document.getElementById('searchDetail');
 
-  // Helpers
   function showLoading(){ overlay.classList.add('active') }
   function hideLoading(){ overlay.classList.remove('active') }
-  function showError(msg, hideAfterMs=8000){ errorBox.style.display='block'; errorBox.textContent = msg; if (hideAfterMs) setTimeout(()=> errorBox.style.display='none', hideAfterMs); }
+  function showError(msg, autoHide = true){
+    errorBox.style.display = 'block';
+    errorBox.textContent = msg;
+    if (autoHide) setTimeout(()=> errorBox.style.display='none', 8000);
+  }
   function clearError(){ errorBox.style.display='none'; errorBox.textContent = '' }
 
+  // safe numeric parse (digit-by-digit sanity)
   function parseNumber(v){
     if (v === null || v === undefined) return 0;
-    const s = String(v).replace(/[^0-9.-]+/g,'');
-    // digit-by-digit safe parse
-    let sign = 1;
-    let str = s;
-    if (str.startsWith('-')){ sign = -1; str = str.slice(1); }
-    // remove leading zeros
-    str = str.replace(/^0+(?=\d)/, '');
-    const n = parseFloat(str);
-    return isNaN(n) ? 0 : n * sign;
+    let s = String(v).trim();
+    if (s === '') return 0;
+    // keep digits, minus, dot
+    s = s.replace(/[^0-9.-]+/g,'');
+    // handle multiple dots/hyphens defensively
+    const minus = s.startsWith('-') ? '-' : '';
+    s = s.replace(/-/g,'');
+    const parts = s.split('.');
+    if (parts.length > 1) {
+      // keep first dot only
+      s = parts.shift() + '.' + parts.join('');
+    } else s = parts[0];
+    const n = parseFloat(minus + s);
+    return isNaN(n) ? 0 : n;
   }
 
-  // Fetch with timeout and fallback proxy
-  async function fetchWithTimeout(url, opts = {}){
+  // fetch with timeout; fallback to public proxy if direct fails
+  async function fetchWithTimeout(url, opts={}){
     const controller = new AbortController();
     const id = setTimeout(()=> controller.abort(), FETCH_TIMEOUT_MS);
     try{
       const r = await fetch(url, { signal: controller.signal, ...opts });
       clearTimeout(id);
       return r;
-    }catch(err){
+    }catch(e){
       clearTimeout(id);
-      throw err;
+      throw e;
     }
   }
 
   async function fetchCSV(url){
-    if (typeof navigator !== 'undefined' && !navigator.onLine) throw new Error('Offline: periksa koneksi internet.');
+    if (typeof navigator !== 'undefined' && !navigator.onLine) throw new Error('Browser offline — periksa koneksi internet.');
     try{
       const res = await fetchWithTimeout(url, { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const text = await res.text();
       return Papa.parse(text.trim(), { header: false, skipEmptyLines: true }).data;
     }catch(err){
-      // fallback proxy
+      // try proxy fallback (AllOrigins)
       try{
-        const proxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-        const res2 = await fetchWithTimeout(proxy, { cache: 'no-store' });
+        const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+        const res2 = await fetchWithTimeout(proxyUrl, { cache: 'no-store' });
         if (!res2.ok) throw new Error('Proxy HTTP ' + res2.status);
         const text2 = await res2.text();
         return Papa.parse(text2.trim(), { header: false, skipEmptyLines: true }).data;
       }catch(proxyErr){
-        throw new Error('Gagal unduh CSV. Pastikan Google Sheet sudah \"Publish to web\" (CSV) dan dapat diakses. Details: ' + (proxyErr.message || proxyErr));
+        throw new Error('Gagal unduh CSV. Pastikan Google Sheet sudah Publish to web (CSV). Detail: ' + (proxyErr.message || proxyErr));
       }
     }
   }
 
-  // find header index helper (case-insensitive, partial)
   function findIndexByCandidates(headers, candidates){
     if (!headers) return -1;
     const lower = headers.map(h => (h||'').toString().toLowerCase());
@@ -179,7 +205,7 @@
     return -1;
   }
 
-  // Build numeric summary cards
+  // render numeric summary cards (order fixed)
   function renderSummaryCards(totals){
     const order = [
       {k:'AO', label:'AO'},
@@ -191,100 +217,102 @@
       {k:'Kendala', label:'Kendala'},
       {k:'Sisa', label:'SISA WO'}
     ];
-    summaryCards.innerHTML = '';
+    summary.innerHTML = '';
     order.forEach(o=>{
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `<div class="label">${o.label}</div><div class="value">${totals[o.k] ?? 0}</div>`;
-      summaryCards.appendChild(card);
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.innerHTML = `<div class="label">${o.label}</div><div class="value">${totals[o.k] ?? 0}</div>`;
+      summary.appendChild(el);
     });
   }
 
-  // Compute SISA WO according to final formula for a given row and index map
-  function computeSisaWOFromRow(row, idx){
-    const AO = parseNumber(row[idx.AO]);
-    const MO = parseNumber(row[idx.MO]);
-    const Survey = parseNumber(row[idx.Survey]);
-    const Tarik = parseNumber(row[idx.Tarik]);
-    const BAI = parseNumber(row[idx.BAI]);
-    const PS = parseNumber(row[idx.PS]);
-    const Kendala = parseNumber(row[idx.Kendala]);
-    return AO + MO + Survey + Tarik + BAI - PS + Kendala;
-  }
-
-  // Load & render main table
+  // Main load + render function
   async function loadMainTable(){
     clearError();
     showLoading();
     try{
       if (typeof Papa === 'undefined') throw new Error('Library PapaParse belum dimuat.');
-      const [dataMain, dataProvi] = await Promise.all([fetchCSV(SHEET_MAIN), fetchCSV(SHEET_PROVI)]);
-      cacheMain = dataMain;
-      cacheProvi = dataProvi;
+      const [dm, dp] = await Promise.all([fetchCSV(SHEET_MAIN), fetchCSV(SHEET_PROVI)]);
+      cacheMain = dm;
+      cacheProvi = dp;
 
-      // Use rows 3..18 and columns C..M like original (adjust if different)
-      const rawRows = cacheMain.slice(2, 18);
-      const sliced = rawRows.map(r => r.slice(2, 13)); // C..M
-      if (!sliced || sliced.length === 0) throw new Error('CSV utama kosong atau format tidak sesuai.');
+      // ensure we have enough rows
+      if (cacheMain.length <= HEADER_ROW_INDEX) throw new Error('CSV utama tidak memiliki header pada baris yang diharapkan.');
 
-      const headers = sliced[0].map(h => h || '');
-      const bodyRows = sliced.slice(1);
+      // take rows starting from header row INDEX and data after
+      // But earlier we used slice C..M -> column start 2 end 13
+      // Build sliced rows from header row (row index HEADER_ROW_INDEX) to data rows starting DATA_START_ROW_INDEX
+      const headerRow = cacheMain[HEADER_ROW_INDEX] || [];
+      const dataRows = cacheMain.slice(DATA_START_ROW_INDEX);
 
-      // detect indices by header name; fallback to prior known positions
-      const idx = {
-        Teknisi: findIndexByCandidates(headers, ['teknisi','nama teknisi','nama']) >= 0 ? findIndexByCandidates(headers, ['teknisi','nama teknisi','nama']) : 0,
-        AO: findIndexByCandidates(headers, ['ao','a.o']) >= 0 ? findIndexByCandidates(headers, ['ao','a.o']) : 1,
-        MO: findIndexByCandidates(headers, ['mo']) >= 0 ? findIndexByCandidates(headers, ['mo']) : 2,
-        Survey: findIndexByCandidates(headers, ['survey']) >= 0 ? findIndexByCandidates(headers, ['survey']) : 5,
-        Tarik: findIndexByCandidates(headers, ['tarik dc','tarik_dc','tarik']) >= 0 ? findIndexByCandidates(headers, ['tarik dc','tarik_dc','tarik']) : 6,
-        BAI: findIndexByCandidates(headers, ['bai']) >= 0 ? findIndexByCandidates(headers, ['bai']) : 7,
-        PS: findIndexByCandidates(headers, ['ps']) >= 0 ? findIndexByCandidates(headers, ['ps']) : 9,
-        Kendala: findIndexByCandidates(headers, ['kendala']) >= 0 ? findIndexByCandidates(headers, ['kendala']) : 10
-      };
+      // map each data row to sliced columns C..M (2..13 exclusive)
+      const slicedRows = dataRows.map(r => (Array.isArray(r) ? r.slice(SLICE_COL_START, SLICE_COL_END) : []));
 
-      // render main table header fixed (as required)
+      // ensure slicedRows exist
+      if (!slicedRows || slicedRows.length === 0) throw new Error('Tidak ada data pada rentang baris yang ditentukan.');
+
+      // Use header labels from headerRow (slice same columns) if available
+      const headerSlice = (headerRow.slice ? headerRow.slice(SLICE_COL_START, SLICE_COL_END) : []);
+      // We'll render fixed header labels to ensure correct columns for user expectation
       document.querySelector('#mainTable thead tr').innerHTML = `
-        <th>Teknisi</th><th>AO</th><th>MO</th><th>Survey</th><th>Tarik DC</th><th>BAI</th><th>PS</th><th>Kendala</th><th>SISA WO</th>
+        <th>Teknisi</th>
+        <th>AO</th>
+        <th>MO</th>
+        <th>Survey</th>
+        <th>Tarik DC</th>
+        <th>BAI</th>
+        <th>PS</th>
+        <th>Kendala</th>
+        <th>SISA WO</th>
       `;
 
-      // build body
+      // Build table body
       mainTbody.innerHTML = '';
       const totals = {AO:0, MO:0, Survey:0, Tarik:0, BAI:0, PS:0, Kendala:0, Sisa:0};
-      for (const r of bodyRows){
-        while (r.length < 13) r.push('');
-        const teknisi = r[idx.Teknisi] || '';
-        const AO = parseNumber(r[idx.AO]);
-        const MO = parseNumber(r[idx.MO]);
-        const Survey = parseNumber(r[idx.Survey]);
-        const Tarik = parseNumber(r[idx.Tarik]);
-        const BAI = parseNumber(r[idx.BAI]);
-        const PS = parseNumber(r[idx.PS]);
-        const Kendala = parseNumber(r[idx.Kendala]);
-        const Sisa = AO + MO + Survey + Tarik + BAI - PS + Kendala;
 
-        totals.AO += AO; totals.MO += MO; totals.Survey += Survey; totals.Tarik += Tarik;
-        totals.BAI += BAI; totals.PS += PS; totals.Kendala += Kendala; totals.Sisa += Sisa;
+      for (const row of slicedRows){
+        // ensure length
+        while (row.length < (SLICE_COL_END - SLICE_COL_START)) row.push('');
+        // mapping inside slice:
+        // 0:TEKNISI,1:TSEL AO,2:TSEL MO,3:INDI AO,4:INDI MO,5:SURVEY,6:TARIK DC,7:BAI,8:PS,9:KENDALA,10:SISA WO (if present)
+        const teknisi = row[0] || '';
+        const tselAO = parseNumber(row[1]);
+        const tselMO = parseNumber(row[2]);
+        const indiAO = parseNumber(row[3]);
+        const indiMO = parseNumber(row[4]);
+        const survey = parseNumber(row[5]);
+        const tarik = parseNumber(row[6]);
+        const bai = parseNumber(row[7]);
+        const ps = parseNumber(row[8]);
+        const kendala = parseNumber(row[9]);
+        // compute AO and MO totals (sum TSEL + INDIBIZ)
+        const AO = tselAO + indiAO;
+        const MO = tselMO + indiMO;
+        const Sisa = AO + MO + survey + tarik + bai - ps + kendala;
+
+        totals.AO += AO; totals.MO += MO; totals.Survey += survey; totals.Tarik += tarik;
+        totals.BAI += bai; totals.PS += ps; totals.Kendala += kendala; totals.Sisa += Sisa;
 
         const tr = document.createElement('tr');
-
-        const cells = [
-          {text:teknisi, cls:'' , role:'teknisi'},
-          {text:AO, cls:'clickable', status:'AO'},
-          {text:MO, cls:'clickable', status:'MO'},
-          {text:Survey, cls:'clickable', status:'SURVEY'},
-          {text:Tarik, cls:'clickable', status:'TARIK DC'},
-          {text:BAI, cls:'clickable', status:'BAI'},
-          {text:PS, cls:'clickable', status:'PS'},
-          {text:Kendala, cls:'clickable', status:'KENDALA'},
-          {text:Sisa, cls:'sisa clickable', status:'SISA WO'}
+        // cells: Tek | AO | MO | Survey | Tarik | BAI | PS | Kendala | Sisa
+        const cvals = [
+          {v:teknisi},
+          {v:AO, status:'AO'},
+          {v:MO, status:'MO'},
+          {v:survey, status:'SURVEY'},
+          {v:tarik, status:'TARIK DC'},
+          {v:bai, status:'BAI'},
+          {v:ps, status:'PS'},
+          {v:kendala, status:'KENDALA'},
+          {v:Sisa, status:'SISA WO', cls:'sisa'}
         ];
 
-        cells.forEach((c, i) => {
+        cvals.forEach((c)=>{
           const td = document.createElement('td');
-          td.textContent = c.text;
-          if (c.cls) td.className = c.cls;
-          // attach both teknisi and status so click filters by both
+          td.textContent = c.v;
+          if (c.cls) td.classList.add(c.cls);
           if (c.status){
+            td.classList.add('clickable');
             td.dataset.status = c.status;
             td.dataset.teknisi = teknisi;
             td.addEventListener('click', ()=> handleStatusClick(c.status, teknisi));
@@ -295,10 +323,10 @@
         mainTbody.appendChild(tr);
       }
 
-      // render totals footer (single row)
+      // single TOTAL row
       mainTfoot.innerHTML = '';
-      const trf = document.createElement('tr');
-      trf.innerHTML = `
+      const trow = document.createElement('tr');
+      trow.innerHTML = `
         <td><strong>TOTAL</strong></td>
         <td><strong>${totals.AO}</strong></td>
         <td><strong>${totals.MO}</strong></td>
@@ -309,13 +337,15 @@
         <td><strong>${totals.Kendala}</strong></td>
         <td class="sisa"><strong>${totals.Sisa}</strong></td>
       `;
-      mainTfoot.appendChild(trf);
+      mainTfoot.appendChild(trow);
 
-      // render numeric cards
+      // numeric summary cards
       renderSummaryCards(totals);
 
-      // cache provi and hide detail
-      cacheProvi = dataProvi;
+      // cache provi
+      cacheProvi = dp;
+
+      // hide detail initially
       detailContainer.style.display = 'none';
 
     }catch(err){
@@ -326,53 +356,47 @@
     }
   }
 
-  // Filter Provi by status + teknisi (if provided)
+  // Filter detail by status + teknisi
   function handleStatusClick(status, teknisi){
     if (!cacheProvi || cacheProvi.length === 0){
-      showError('Data detail tidak tersedia. Tekan Refresh.');
+      showError('Data detail tidak tersedia. Tekan Refresh.', true);
       return;
     }
     const headers = cacheProvi[0] || [];
     const rows = cacheProvi.slice(1);
-    // find status column index heuristically
-    const statusIdx = findIndexByCandidates(headers, ['status','status wo','status_wo','status_wo (h)']);
-    const idx = statusIdx >= 0 ? statusIdx : 7; // fallback
 
-    const result = rows.filter(r => {
-      const val = (r[idx]||'').toString().trim().toUpperCase();
-      // status filter
-      let matchStatus = false;
-      if (status === 'KENDALA') matchStatus = ['KENDALA JARINGAN','KENDALA PELANGGAN'].includes(val);
-      else if (status === 'SISA WO') matchStatus = !['PS','BAI','KENDALA JARINGAN','KENDALA PELANGGAN'].includes(val);
-      else matchStatus = val === status;
-      if (!matchStatus) return false;
-      // teknisi filter if provided
-      if (teknisi) {
-        // find a column likely to contain teknisi in Provi sheet: check common names
-        const teknisiIdx = findIndexByCandidates(headers, ['teknisi','nama teknisi','pic','assigned to','petugas','engineer','teknisi']);
-        if (teknisiIdx >= 0) {
-          const tval = (r[teknisiIdx]||'').toString().trim();
-          return tval === teknisi;
-        }
-        // fallback: if no teknisi column, return true (can't filter by teknisi)
-        return true;
+    // find status column index heuristically
+    const statusIdx = findIndexByCandidates(headers, ['status','status wo','status_wo','status wo','status_work']);
+    const statusColumn = statusIdx >= 0 ? statusIdx : 7; // fallback 7 (H) like earlier
+
+    // find possible teknisi column in detail sheet
+    const teknisiIdx = findIndexByCandidates(headers, ['teknisi','nama teknisi','pic','assigned to','teknisi','engineer','petugas']);
+
+    const filtered = rows.filter(r => {
+      const sVal = (r[statusColumn]||'').toString().trim().toUpperCase();
+      let match = false;
+      if (status === 'KENDALA') match = ['KENDALA JARINGAN','KENDALA PELANGGAN'].includes(sVal);
+      else if (status === 'SISA WO') match = !['PS','BAI','KENDALA JARINGAN','KENDALA PELANGGAN'].includes(sVal);
+      else match = sVal === status;
+      if (!match) return false;
+      if (teknisi && teknisiIdx >= 0){
+        const tVal = (r[teknisiIdx]||'').toString().trim();
+        return tVal === teknisi;
       }
       return true;
     });
 
-    detailThead.innerHTML = '<tr>' + headers.map(h => `<th>${h||''}</th>`).join('') + '</tr>';
-    detailTbody.innerHTML = result.map(r => `<tr>${r.map(c=>`<td>${c||''}</td>`).join('')}</tr>`).join('');
-    detailContainer.style.display = result.length ? 'block' : 'none';
+    // render detail table
+    detailThead.innerHTML = '<tr>' + (headers || []).map(h => `<th>${h||''}</th>`).join('') + '</tr>';
+    detailTbody.innerHTML = filtered.map(r => `<tr>${r.map(c=>`<td>${c||''}</td>`).join('')}</tr>`).join('');
+    detailContainer.style.display = filtered.length ? 'block' : 'none';
     detailContainer.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
-  // flexible search across detail table
+  // search within detail
   function applySearch(q){
-    const t = q.trim().toLowerCase();
-    if (!t){
-      Array.from(detailTbody.querySelectorAll('tr')).forEach(tr => tr.style.display = '');
-      return;
-    }
+    const t = (q||'').toString().trim().toLowerCase();
+    if (!t){ Array.from(detailTbody.querySelectorAll('tr')).forEach(tr => tr.style.display = ''); return; }
     Array.from(detailTbody.querySelectorAll('tr')).forEach(tr => {
       tr.style.display = tr.textContent.toLowerCase().includes(t) ? '' : 'none';
     });
@@ -380,10 +404,11 @@
 
   // init
   (function init(){
+    // wire UI
     document.getElementById('refreshBtn').addEventListener('click', ()=> loadMainTable());
-    document.getElementById('searchDetail').addEventListener('input', e => {
+    searchInput.addEventListener('input', e => {
       clearTimeout(window._searchTimer);
-      window._searchTimer = setTimeout(()=> applySearch(e.target.value), 180);
+      window._searchTimer = setTimeout(()=> applySearch(e.target.value), 200);
     });
 
     // load PapaParse
@@ -398,10 +423,9 @@
         showError('Inisialisasi gagal: ' + (e.message || e));
       }
     };
-    s.onerror = ()=> showError('Gagal load PapaParse. Periksa koneksi.');
+    s.onerror = ()=> showError('Gagal load PapaParse. Periksa koneksi internet atau izin akses sheet.');
     document.body.appendChild(s);
 
-    // cleanup auto-refresh on unload
     window.addEventListener('beforeunload', ()=> { if (autoRefreshTimer) clearInterval(autoRefreshTimer); });
   })();
   </script>
