@@ -1,164 +1,218 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Singaparna</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DAS PROVI — Modern Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{ --primary:#0a4275; --accent:#145dbf; --muted:#f4f6f8; --card:#ffffff; --shadow: 0 6px 20px rgba(10,66,117,0.08); }
+    :root{
+      --bg:#f4f7fb;
+      --card:#ffffff;
+      --primary:#0a58a6; /* modern blue */
+      --accent:#007bff;
+      --muted:#9aa7bd;
+      --shadow: 0 10px 30px rgba(12,40,80,0.06);
+      --radius:14px;
+    }
     *{box-sizing:border-box}
-    body{ margin:0; font-family:"Poppins",sans-serif; background:var(--muted); color:#222 }
-    .container{ display:flex; gap:20px; padding:20px; max-width:1300px; margin:0 auto }
-    .menu-btn{ position:fixed; top:15px; left:15px; background:var(--primary); color:#fff; border:0; border-radius:8px; padding:9px 12px; cursor:pointer; z-index:1000 }
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Poppins,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial; background:var(--bg); color:#1f2937;
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    }
 
-    .card{ background:var(--card); border-radius:12px; padding:14px; box-shadow:var(--shadow); width:100% }
-    h1{ margin:0 0 10px 0; font-size:20px }
+    /* layout */
+    .app{
+      max-width:1200px; margin:20px auto; padding:18px; display:flex; gap:18px; align-items:flex-start;
+    }
 
-    .controls{ display:flex; gap:8px; align-items:center; margin-bottom:12px }
-    .controls input{ padding:8px 10px; border-radius:8px; border:1px solid #ddd; min-width:260px }
-    .controls button{ padding:8px 10px; border-radius:8px; border:0; background:var(--primary); color:#fff; cursor:pointer }
+    /* Sidebar */
+    .sidebar{
+      width:68px; background:linear-gradient(180deg,var(--primary),var(--accent)); border-radius:12px; padding:12px; color:#fff; box-shadow:var(--shadow);
+      display:flex; flex-direction:column; gap:12px; align-items:center;
+    }
+    .sidebar .logo{ width:44px; height:44px; border-radius:10px; background:rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; font-weight:700 }
+    .sidebar a{ color:rgba(255,255,255,0.9); text-decoration:none; font-size:12px }
 
-    table{ width:100%; border-collapse:collapse }
-    thead th{ padding:10px; background:linear-gradient(180deg,var(--accent),var(--primary)); color:#fff; font-size:12px; text-transform:uppercase; text-align:center }
-    tbody td{ padding:10px; border-bottom:1px solid #f0f0f0; text-align:center; font-size:13px }
+    /* Main card */
+    .main{
+      flex:1; background:var(--card); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow);
+    }
+
+    .header{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:14px }
+    .title{ font-size:20px; font-weight:600 }
+
+    .controls{ display:flex; gap:8px; align-items:center }
+    .search{ display:flex; align-items:center; gap:8px; background:#f5f7fb; border-radius:10px; padding:6px 8px }
+    .search input{ border:0; background:transparent; outline:none; font-size:14px; min-width:220px }
+    .btn{ background:var(--primary); color:#fff; border:0; padding:8px 10px; border-radius:8px; cursor:pointer }
+
+    /* Table container */
+    .table-wrap{ width:100%; overflow:auto; border-radius:12px }
+    table{ width:100%; border-collapse:collapse; min-width:900px }
+    thead th{ position:sticky; top:0; background:linear-gradient(180deg,var(--accent),var(--primary)); color:#fff; padding:12px 10px; text-transform:uppercase; font-size:12px }
+    tbody td{ padding:12px 10px; border-bottom:1px solid #f0f3f8; font-size:13px; text-align:center }
     tbody tr:hover{ background:#f7fbff }
     td.clickable{ color:var(--accent); cursor:pointer; font-weight:600 }
 
-    /* hide the visual numbers in the very last column (SISA WO) */
-    table tr th:last-child, table tr td:last-child{ visibility:hidden; width:0; padding:0; }
+    /* Detail area */
+    #detailContainer{ margin-top:14px; display:none }
+    #detailContainer .card{ padding:12px }
 
-    .overlay{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.6); z-index:2000; visibility:hidden; opacity:0; transition:all .2s }
+    /* overlay loading */
+    .overlay{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(12,20,40,0.25); z-index:9999; visibility:hidden; opacity:0; transition:all .18s }
     .overlay.active{ visibility:visible; opacity:1 }
-    .spinner{ width:52px; height:52px; border-radius:50%; border:6px solid rgba(10,66,117,0.12); border-top-color:var(--primary); animation:spin 1s linear infinite }
+    .spinner{ width:56px; height:56px; border-radius:50%; border:6px solid rgba(255,255,255,0.14); border-top-color:#fff; animation:spin 1s linear infinite }
     @keyframes spin{ to{ transform:rotate(360deg) } }
 
-    .error{ background:#ffecec; color:#900; padding:10px; border-radius:8px; margin-bottom:12px; display:none }
+    .error{ background:#fff4f6; color:#b91c1c; padding:10px; border-radius:8px; margin-bottom:8px; display:none }
 
-    @media (max-width:900px){ .controls input{ min-width:160px } }
+    /* responsive */
+    @media (max-width:900px){
+      .app{ padding:12px; margin:12px }
+      table{ min-width:800px }
+      .sidebar{ display:none }
+      .search input{ min-width:120px }
+      thead th, tbody td{ padding:10px }
+    }
+    @media (max-width:520px){
+      table{ min-width:700px }
+    }
   </style>
 </head>
 <body>
-  <button class="menu-btn" id="menuToggle">☰</button>
-  <div class="container">
-    <div class="card" style="width:100%">
-      <h1>Dashboard Provisioning</h1>
-      <div class="controls">
-        <input id="searchDetail" placeholder="Cari di detail (ketik bebas)..." aria-label="search" />
-        <button id="refreshBtn">🔄 Refresh</button>
+  <div class="app">
+    <nav class="sidebar" aria-hidden="false">
+      <div class="logo">DP</div>
+      <a href="#" title="Dashboard">🏠</a>
+      <a href="#" title="Provi SPA">📋</a>
+      <a href="#" title="Monet">💰</a>
+    </nav>
+
+    <main class="main" role="main">
+      <div class="header">
+        <div>
+          <div class="title">Dashboard Provisioning</div>
+          <div style="color:var(--muted); font-size:13px; margin-top:4px">Ringkasan & Sisa WO — Responsive & Modern</div>
+        </div>
+        <div class="controls">
+          <div class="search" role="search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 21l-4.35-4.35" stroke="#6b7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <input id="searchDetail" placeholder="Cari di detail (ketik bebas)..." aria-label="search" />
+          </div>
+          <button id="refreshBtn" class="btn" title="Refresh sekarang">🔄 Refresh</button>
+        </div>
       </div>
 
       <div id="errorBox" class="error" role="alert"></div>
 
-      <div style="overflow:auto">
-        <table id="mainTable">
+      <div class="table-wrap card" aria-live="polite">
+        <table id="mainTable" role="table">
           <thead></thead>
           <tbody></tbody>
         </table>
       </div>
 
-      <div id="detailContainer" style="margin-top:18px; display:none">
-        <h2 style="color:var(--accent); margin:8px 0">Detail Data</h2>
-        <div style="overflow:auto; max-height:420px">
-          <table id="detailTable">
-            <thead></thead>
-            <tbody></tbody>
-          </table>
+      <div id="detailContainer" class="card">
+        <h3 style="margin-top:0; color:var(--primary)">Detail Data</h3>
+        <div style="overflow:auto; max-height:360px">
+          <table id="detailTable"><thead></thead><tbody></tbody></table>
         </div>
       </div>
-    </div>
+    </main>
   </div>
 
   <div class="overlay" id="overlay"><div class="spinner" role="status" aria-label="loading"></div></div>
 
   <script>
-  // ---------------- Configuration ----------------
+  // Configuration — public sheets (as provided)
   const SHEET_MAIN = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1651389267&single=true&output=csv";
   const SHEET_PROVI = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1451848426&single=true&output=csv";
-  const AUTO_REFRESH_MS = 60 * 1000; // 1 minute
 
-  // ---------------- State ----------------
-  let cacheMain = null; let cacheProvi = null; let autoRefreshTimer = null;
-
+  // State
+  let cacheMain = null; let cacheProvi = null;
   const overlay = document.getElementById('overlay');
   const errorBox = document.getElementById('errorBox');
 
-  function showLoading(){ overlay.classList.add('active'); overlay.style.visibility='visible'; overlay.style.opacity='1' }
-  function hideLoading(){ overlay.classList.remove('active'); overlay.style.visibility='hidden'; overlay.style.opacity='0' }
+  function showLoading(){ overlay.classList.add('active'); }
+  function hideLoading(){ overlay.classList.remove('active'); }
   function showError(msg){ errorBox.style.display='block'; errorBox.textContent = msg }
   function clearError(){ errorBox.style.display='none'; errorBox.textContent = '' }
 
-  function parseNumber(v){ if (v === null || v === undefined) return 0; const s = String(v).replace(/[^0-9.-]+/g,''); const n = parseFloat(s); return isNaN(n)?0:n }
+  function parseNumber(v){ if (v==null) return 0; const s = String(v).replace(/[^0-9.-]+/g,''); const n = parseFloat(s); return isNaN(n)?0:n }
 
-  // ---------------- CSV Fetch ----------------
+  // Fetch CSV (direct) with basic error handling — sheet is public
   async function fetchCSV(url){
-    if (typeof navigator !== 'undefined' && !navigator.onLine) throw new Error('Anda tampaknya offline.');
+    if (typeof navigator !== 'undefined' && !navigator.onLine) throw new Error('Anda offline. Periksa koneksi.');
     const res = await fetch(url, {cache:'no-store'});
     if (!res.ok) throw new Error('Fetch gagal: ' + res.status);
     const text = await res.text();
-    return Papa.parse(text.trim(), { header: false, skipEmptyLines: true }).data;
+    return Papa.parse(text.trim(), { header:false, skipEmptyLines:true }).data;
   }
 
-  // ---------------- Build Main Table ----------------
   async function loadMainTable(){
     clearError(); showLoading();
     try{
       if (typeof Papa === 'undefined') throw new Error('Library PapaParse belum dimuat.');
-
       const [dataMain, dataProvi] = await Promise.all([fetchCSV(SHEET_MAIN), fetchCSV(SHEET_PROVI)]);
       cacheMain = dataMain; cacheProvi = dataProvi;
 
-      // slice similar to original: rows 3..18 (index 2..17), and cols C..M (index 2..12)
-      const rows = cacheMain.slice(2, 18).map(r => r.slice(2, 13));
+      // slice rows and columns as original
+      const rows = cacheMain.slice(2,18).map(r => r.slice(2,13));
       const headers = rows[0] || []; const bodyRows = rows.slice(1);
 
       const thead = document.querySelector('#mainTable thead'); const tbody = document.querySelector('#mainTable tbody');
       thead.innerHTML = '<tr>' + headers.map(h=>`<th>${h||''}</th>`).join('') + '</tr>';
       tbody.innerHTML = '';
 
-      bodyRows.forEach(row => {
+      bodyRows.forEach(row=>{
         while(row.length < 12) row.push('');
         const tselAO = parseNumber(row[1]); const tselMO = parseNumber(row[2]);
         const indiAO = parseNumber(row[3]); const indiMO = parseNumber(row[4]);
         const ps = parseNumber(row[9]); const kendala = parseNumber(row[10]);
         const sisaWO = (tselAO + tselMO + indiAO + indiMO) - (ps + kendala);
-        row[11] = sisaWO; // store
+        row[11] = sisaWO; // ensure value present
 
         const tr = document.createElement('tr');
-        row.forEach((val, colIndex) => {
-          const td = document.createElement('td'); td.textContent = (val===null||val===undefined)?'':val;
+        row.forEach((val,colIndex)=>{
+          const td = document.createElement('td'); td.textContent = (val==null)?'':val;
           const statusMap = {5:'SURVEY',6:'TARIK DC',7:'SUDAH SC',8:'PS',9:'KENDALA',10:'SISA WO'};
           if (!isNaN(parseNumber(val)) && statusMap[colIndex]){
-            td.classList.add('clickable'); td.dataset.status = statusMap[colIndex]; td.addEventListener('click', ()=> handleStatusClick(statusMap[colIndex]));
+            td.classList.add('clickable'); td.dataset.status = statusMap[colIndex];
+            td.addEventListener('click', (e)=> handleStatusClick(e.currentTarget.dataset.status));
           }
           tr.appendChild(td);
         });
         tbody.appendChild(tr);
       });
 
-      // remove any existing TOTAL row we might have added earlier
-      const existingTotal = tbody.querySelector('tr.total-row'); if (existingTotal) existingTotal.remove();
+      // compute total per numeric column (columns that contain numbers)
+      const totalRow = document.createElement('tr'); totalRow.style.fontWeight='700';
+      const firstCol = document.createElement('td'); firstCol.textContent='TOTAL'; firstCol.style.textAlign='center'; totalRow.appendChild(firstCol);
 
-      // compute total sisa WO (index 11). sum numeric values
-      const totalSisaWO = Array.from(tbody.querySelectorAll('tr')).reduce((acc,tr)=>{
-        const cell = tr.children[11]; if (!cell) return acc; return acc + parseNumber(cell.textContent || 0);
-      },0);
-
-      const totalRow = document.createElement('tr'); totalRow.classList.add('total-row');
-      totalRow.innerHTML = headers.map((_,i)=> i===0 ? '<td><b>TOTAL</b></td>' : (i===11? `<td><b>${totalSisaWO}</b></td>` : '<td></td>')).join('');
+      // for remaining header count - 1 because first used by label
+      for(let c=1;c<headers.length;c++){
+        // sum column c across body rows
+        const sum = Array.from(tbody.querySelectorAll('tr')).reduce((acc,tr)=>{ const cell = tr.children[c]; if(!cell) return acc; return acc + parseNumber(cell.textContent||0); },0);
+        const td = document.createElement('td'); td.textContent = sum; td.style.textAlign='center'; totalRow.appendChild(td);
+      }
       tbody.appendChild(totalRow);
 
-    }catch(err){ console.error(err); showError('Gagal memuat data: ' + (err.message || err)); }
+      // hide detail container initially
+      document.getElementById('detailContainer').style.display='none';
+
+    }catch(err){ console.error(err); showError('Gagal memuat data: ' + (err.message||err)); }
     finally{ hideLoading(); }
   }
 
-  // ---------------- Detail ----------------
-  function handleStatusClick(status){ if (!cacheProvi) { showError('Data detail belum tersedia. Tekan Refresh.'); return; } showDetail(status); }
+  function handleStatusClick(status){ if(!cacheProvi){ showError('Data detail belum tersedia - tekan Refresh.'); return;} showDetail(status); }
 
   function showDetail(type){
-    const data = cacheProvi; if (!data||data.length===0) return;
-    const headers = data[0]; const rows = data.slice(1); const STATUS_WO_INDEX = 7; // H
-    const t = s => (s||'').toString().trim().toUpperCase();
+    clearError();
+    const data = cacheProvi; if(!data||data.length===0){ showError('Data detail kosong.'); return; }
+    const headers = data[0]; const rows = data.slice(1); const STATUS_WO_INDEX = 7;
+    const t = s=> (s||'').toString().trim().toUpperCase();
     let filtered = [];
     switch(type){
       case 'SURVEY': case 'TARIK DC': case 'SUDAH SC': case 'PS': filtered = rows.filter(r=>t(r[STATUS_WO_INDEX])===type); break;
@@ -168,23 +222,22 @@
     }
 
     const container = document.getElementById('detailContainer'); const thead = document.querySelector('#detailTable thead'); const tbody = document.querySelector('#detailTable tbody');
-    thead.innerHTML = '<tr>' + (headers||[]).map(h=>`<th>${h||''}</th>`).join('') + '</tr>';
+    thead.innerHTML = '<tr>' + headers.map(h=>`<th>${h||''}</th>`).join('') + '</tr>';
     tbody.innerHTML = filtered.map(r=>`<tr>${r.map(c=>`<td>${c||''}</td>`).join('')}</tr>`).join('');
-    container.style.display = filtered.length ? 'block' : 'none'; if (filtered.length) container.scrollIntoView({behavior:'smooth', block:'start'});
+    container.style.display = filtered.length? 'block':'none'; if(filtered.length) container.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
-  // ---------------- Search ----------------
-  function initSearch(){ const input = document.getElementById('searchDetail'); let t=null; input.addEventListener('input', ()=>{ clearTimeout(t); t = setTimeout(()=> applySearch(input.value.trim()), 200); }); }
-  function applySearch(q){ const tbody = document.querySelector('#detailTable tbody'); if (!tbody) return; const rows = Array.from(tbody.querySelectorAll('tr')); if (!q){ rows.forEach(r=>r.style.display=''); return; } const ql = q.toLowerCase(); rows.forEach(r=>{ r.style.display = r.textContent.toLowerCase().includes(ql) ? '' : 'none'; }); }
+  // Search across detail
+  (function initSearch(){ const input = document.getElementById('searchDetail'); let to=null; input.addEventListener('input', ()=>{ clearTimeout(to); to = setTimeout(()=>{ const q = input.value.trim().toLowerCase(); const tbody = document.querySelector('#detailTable tbody'); if(!tbody) return; Array.from(tbody.querySelectorAll('tr')).forEach(r=>{ r.style.display = q===''? '':'none'; if(q && r.textContent.toLowerCase().includes(q)) r.style.display=''; }); },200); }); })();
 
-  // ---------------- Refresh ----------------
-  function initRefresh(){ document.getElementById('refreshBtn').addEventListener('click', ()=> loadMainTable()); }
-  function startAutoRefresh(){ if (autoRefreshTimer) clearInterval(autoRefreshTimer); autoRefreshTimer = setInterval(()=> loadMainTable(), AUTO_REFRESH_MS); }
+  // refresh button
+  document.getElementById('refreshBtn').addEventListener('click', ()=> loadMainTable());
 
-  // ---------------- Init ----------------
-  document.getElementById('menuToggle').addEventListener('click', ()=> alert('Sidebar toggle (placeholder)'));
-
-  (function init(){ initSearch(); initRefresh(); const script = document.createElement('script'); script.src = 'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js'; script.onload = async ()=>{ await loadMainTable(); startAutoRefresh(); }; script.onerror = ()=> showError('Gagal memuat library PapaParse. Periksa koneksi.'); document.body.appendChild(script); window.addEventListener('beforeunload', ()=>{ if (autoRefreshTimer) clearInterval(autoRefreshTimer); }); })();
+  // load PapaParse then data
+  (function init(){
+    const s = document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js';
+    s.onload = ()=> loadMainTable(); s.onerror = ()=> showError('Gagal memuat library PapaParse. Periksa koneksi.'); document.body.appendChild(s);
+  })();
   </script>
 </body>
 </html>
