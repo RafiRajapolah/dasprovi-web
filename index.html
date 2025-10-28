@@ -22,37 +22,6 @@
       transition: all 0.3s ease;
       color:#223;
       min-height:100vh;
-           overflow-x: hidden;
-      position: relative;
-    }
-
-    /* 🔵 Background bergerak */
-    body::before {
-      content: "";
-      position: fixed;
-      top: 0; left: 0;
-      width: 120%;
-      height: 120%;
-      background-image: url("D8C1B2EE-A89D-4990-9C2B-C71CECBD69BB.png");
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      opacity: 0.15;
-      z-index: 0;
-      animation: bgMove 40s linear infinite alternate;
-      transform: scale(1.1);
-    }
-
-    @keyframes bgMove {
-      0% { transform: scale(1.1) translate(0px, 0px); }
-      50% { transform: scale(1.12) translate(-10px, -10px); }
-      100% { transform: scale(1.1) translate(10px, 10px); }
-    }
-
-    /* pastikan semua konten di atas background */
-    .menu-btn, .sidebar, .content, .overlay {
-      position: relative;
-      z-index: 1;
     }
 
     /* Toggle button */
@@ -170,15 +139,215 @@
         <tbody></tbody>
       </table>
     </div>
+
   </div>
 
   <div class="overlay" id="overlay" aria-hidden="true"><div class="spinner" role="status" aria-label="Loading"></div></div>
 
   <script>
-  // === seluruh script dashboard kamu tetap sama ===
+  // -------------------- Configuration --------------------
+  const SHEET_MAIN = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1651389267&single=true&output=csv";
+  const SHEET_PROVI = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1451848426&single=true&output=csv";
+
+  // Auto refresh interval in milliseconds (user chose: 1 minute)
+  const AUTO_REFRESH_MS = 60 * 1000;
+
+  // -------------------- State --------------------
+  let cacheMain = null;    // parsed CSV array (rows)
+  let cacheProvi = null;   // parsed Provi_spa CSV array (rows)
+  let autoRefreshTimer = null;
+
+  // -------------------- Utils --------------------
+  function $(sel){ return document.querySelector(sel) }
+  const overlay = $('#overlay');
+  function showLoading(){ overlay.classList.add('active'); overlay.setAttribute('aria-hidden','false') }
+  function hideLoading(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true') }
+
+  function parseNumber(v){
+    if (v === null || v === undefined) return 0;
+    // remove commas and non-numeric chars except - and .
+    const s = String(v).replace(/[^0-9.-]+/g, '');
+    const n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
+  }
+
+  // -------------------- CSV Fetch with PapaParse --------------------
+  async function fetchCSV(url){
+    const res = await fetch(url, {cache: 'no-store'});
+    if (!res.ok) throw new Error('Failed to fetch CSV: ' + res.status);
+    const text = await res.text();
+    // Use PapaParse (loaded later) via global Papa
+    return Papa.parse(text.trim(), { header: false, skipEmptyLines: true }).data;
+  }
+
+  // -------------------- Build Main Table --------------------
+  async function loadMainTable(){
+    try{
+      showLoading();
+      // If cached and still fresh we could skip; but we always fetch to respect realtime
+      const [dataMain, dataProvi] = await Promise.all([fetchCSV(SHEET_MAIN), fetchCSV(SHEET_PROVI)]);
+      cacheMain = dataMain;
+      cacheProvi = dataProvi;
+
+      // original code used rows slice(2,18) and columns C–M (index 2–12)
+      const rows = cacheMain.slice(2, 18).map(r => r.slice(2, 13));
+      const headers = rows[0] || [];
+      const bodyRows = rows.slice(1);
+
+      const thead = $('#mainTable thead');
+      const tbody = $('#mainTable tbody');
+
+      thead.innerHTML = '<tr>' + headers.map(h => `<th>${h || ''}</th>`).join('') + '</tr>';
+      tbody.innerHTML = '';
+
+      // build rows and compute SISA WO per row
+      bodyRows.forEach((row)=>{
+        // guard length
+        while(row.length < 12) row.push('');
+        // indexes relative to sliced row: 1:D,2:E,3:F,4:G,9:K,10:L -> zero-based in slice
+        const tselAO = parseNumber(row[1]);
+        const tselMO = parseNumber(row[2]);
+        const indiAO  = parseNumber(row[3]);
+        const indiMO  = parseNumber(row[4]);
+        const ps      = parseNumber(row[9]);
+        const kendala = parseNumber(row[10]);
+        //const sisaWO  = (tselAO + tselMO + indiAO + indiMO) - (ps + kendala);
+        //row[11] = sisaWO; // put in column M (index 11)
+
+        const tr = document.createElement('tr');
+        row.forEach((val, colIndex)=>{
+          const td = document.createElement('td');
+          td.textContent = (val === '' || val === null || val === undefined) ? '' : val;
+          // clickable columns: map to status names like original mapping (5..10)
+          const statusMap = { 5:'SURVEY', 6:'TARIK DC', 7:'SUDAH SC', 8:'PS', 9:'KENDALA', 10:'SISA WO' };
+          if (!isNaN(parseNumber(val)) && statusMap[colIndex]){
+            td.classList.add('clickable');
+            td.dataset.status = statusMap[colIndex];
+            td.addEventListener('click',(e)=> handleStatusClick(e.currentTarget.dataset.status));
+          }
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+
+      // total SISA WO (column index 11). Exclude any possible last total row if present
+      //const totalSisaWO = Array.from(tbody.querySelectorAll('tr')).reduce((acc,tr)=>{
+        //const v = parseNumber(tr.children[11]?.textContent || 0);
+        //return acc + v;
+      //},0);
+        //const totalRow = document.createElement('tr');
+      //totalRow.innerHTML = headers.map((_,i)=> i===0 ? '<td><b>#</b></td>' : (i===11? `<td><b>${totalSisaWO}</b></td>`:'<td></td>')).join('');
+      //tbody.appendChild(totalRow);
+      
+    }catch(err){
+      console.error(err);
+      alert('Terjadi kesalahan saat load data: ' + (err.message || err));
+    }finally{
+      hideLoading();
+    }
+  }
+
+  // -------------------- Detail View --------------------
+  function handleStatusClick(status){
+    // Use cached Provi data to filter
+    if (!cacheProvi){ alert('Data detail belum siap, coba refresh.'); return; }
+    showDetail(status);
+  }
+
+  function showDetail(type){
+    const data = cacheProvi;
+    if (!data || data.length === 0) return;
+    const headers = data[0];
+    const rows = data.slice(1);
+    const STATUS_WO_INDEX = 7; // kolom H in original Provi_spa (zero-based)
+
+    let filtered = [];
+    const t = (s)=> (s||'').toString().trim().toUpperCase();
+    switch(type){
+      case 'SURVEY': case 'TARIK DC': case 'SUDAH SC': case 'PS':
+        filtered = rows.filter(r => t(r[STATUS_WO_INDEX]) === type);
+        break;
+      case 'KENDALA':
+        filtered = rows.filter(r => ['KENDALA JARINGAN','KENDALA PELANGGAN'].includes(t(r[STATUS_WO_INDEX])));
+        break;
+      case 'SISA WO':
+        filtered = rows.filter(r => !['PS','BAI','KENDALA JARINGAN','KENDALA PELANGGAN'].includes(t(r[STATUS_WO_INDEX])));
+        break;
+      default:
+        filtered = [];
+    }
+
+    const container = $('#detailContainer');
+    const thead = $('#detailTable thead');
+    const tbody = $('#detailTable tbody');
+
+    thead.innerHTML = '<tr>' + (headers || []).map(h => `<th>${h||''}</th>`).join('') + '</tr>';
+    tbody.innerHTML = filtered.map(r => `<tr>${r.map(c=>`<td>${c||''}</td>`).join('')}</tr>`).join('');
+
+    container.style.display = filtered.length ? 'block' : 'none';
+    container.scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  // -------------------- Search (flexible across all columns) --------------------
+  function initSearch(){
+    const input = $('#searchDetail');
+    let timeout = null;
+    input.addEventListener('input', ()=>{
+      clearTimeout(timeout);
+      timeout = setTimeout(()=> applySearch(input.value.trim()), 200);
+    });
+  }
+
+  function applySearch(q){
+    const tbody = $('#detailTable tbody');
+    if (!tbody) return;
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    if (!q){ rows.forEach(r=> r.style.display=''); return; }
+    const qlow = q.toLowerCase();
+    rows.forEach(r=>{
+      const text = r.textContent.toLowerCase();
+      r.style.display = text.includes(qlow) ? '' : 'none';
+    });
+  }
+
+  // -------------------- Manual Refresh Button --------------------
+  function initRefresh(){
+    $('#refreshBtn').addEventListener('click', ()=> {
+      loadMainTable();
+    });
+  }
+
+  // -------------------- Auto Refresh --------------------
+  function startAutoRefresh(){
+    if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+    autoRefreshTimer = setInterval(()=>{
+      loadMainTable();
+    }, AUTO_REFRESH_MS);
+  }
+
+  // -------------------- Init --------------------
   document.getElementById('menuBtn').addEventListener('click', ()=>{
     document.getElementById('sidebar').classList.toggle('active');
   });
+
+  function init(){
+    initSearch();
+    initRefresh();
+    // load PapaParse library then initial table
+    const papaScript = document.createElement('script');
+    papaScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js';
+    papaScript.onload = async ()=>{
+      await loadMainTable();
+      startAutoRefresh();
+    };
+    papaScript.onerror = ()=> alert('Gagal load library PapaParse. Periksa koneksi.');
+    document.body.appendChild(papaScript);
+
+    // clear interval on unload
+    window.addEventListener('beforeunload', ()=>{ if (autoRefreshTimer) clearInterval(autoRefreshTimer); });
+  }
+
+  init();
   </script>
 </body>
 </html>
