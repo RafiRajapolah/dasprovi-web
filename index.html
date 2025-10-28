@@ -214,10 +214,10 @@
         const sisaWO  = (tselAO + tselMO + indiAO + indiMO) - (ps + kendala);
         row[11] = sisaWO; // put in column M (index 11)
 
-        //const tr = document.createElement('tr');
-        //row.forEach((val, colIndex)=>{
-          //const td = document.createElement('td');
-          //td.textContent = (val === '' || val === null || val === undefined) ? '' : val;
+        const tr = document.createElement('tr');
+        row.forEach((val, colIndex)=>{
+          const td = document.createElement('td');
+          td.textContent = (val === '' || val === null || val === undefined) ? '' : val;
           // clickable columns: map to status names like original mapping (5..10)
           const statusMap = { 5:'SURVEY', 6:'TARIK DC', 7:'SUDAH SC', 8:'PS', 9:'KENDALA', 10:'SISA WO' };
           if (!isNaN(parseNumber(val)) && statusMap[colIndex]){
