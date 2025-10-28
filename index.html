@@ -192,11 +192,25 @@
 
     const headers = filtered[0];
     tableHead.innerHTML =
-      "<tr>" + headers.map((h) => <th>${h}</th>).join("") + "</tr>";
+      "<tr>" + headers.map((h) => `<th>${h}</th>`).join("") + "</tr>";
 
     tableBody.innerHTML = "";
+
+    // === Hitung dan tampilkan per baris ===
     filtered.slice(1).forEach((row) => {
       const tr = document.createElement("tr");
+
+      const tselAO = parseFloat(row[1]) || 0; // D
+      const tselMO = parseFloat(row[2]) || 0; // E
+      const indiAO = parseFloat(row[3]) || 0; // F
+      const indiMO = parseFloat(row[4]) || 0; // G
+      const ps = parseFloat(row[9]) || 0;     // K
+      const kendala = parseFloat(row[10]) || 0; // L
+
+      // Rumus: (D+E+F+G) - (K+L)
+      const sisaWO = (tselAO + tselMO + indiAO + indiMO) - (ps + kendala);
+      row[11] = sisaWO; // simpan ke kolom M
+
       row.forEach((value, colIndex) => {
         const td = document.createElement("td");
         td.textContent = value;
@@ -210,7 +224,7 @@
           10: "SISA WO",
         };
 
-        if (!isNaN(value) && value.trim() !== "" && statusMap[colIndex]) {
+        if (!isNaN(value) && value.toString().trim() !== "" && statusMap[colIndex]) {
           td.classList.add("clickable");
           td.addEventListener("click", () =>
             showDetail(statusMap[colIndex], value)
@@ -221,6 +235,20 @@
       });
       tableBody.appendChild(tr);
     });
+
+    // === Hitung total SISA WO ===
+    const totalSisaWO = Array.from(tableBody.querySelectorAll("tr"))
+      .map(tr => parseFloat(tr.children[11]?.textContent) || 0)
+      .reduce((a, b) => a + b, 0);
+
+    const totalRow = document.createElement("tr");
+    const totalCells = filtered[0].map((_, i) =>
+      i === 0 ? "<td><b>TOTAL</b></td>" :
+      i === 11 ? `<td><b>${totalSisaWO}</b></td>` :
+      "<td></td>"
+    );
+    totalRow.innerHTML = totalCells.join("");
+    tableBody.appendChild(totalRow);
   }
 
   async function showDetail(type, value) {
@@ -249,12 +277,7 @@
       case "SISA WO":
         filtered = data.filter((row) => {
           const status = (row[STATUS_WO_INDEX] || "").trim().toUpperCase();
-          return ![
-            "PS",
-            "BAI",
-            "KENDALA JARINGAN",
-            "KENDALA PELANGGAN",
-          ].includes(status);
+          return !["PS", "BAI", "KENDALA JARINGAN", "KENDALA PELANGGAN"].includes(status);
         });
         break;
       default:
@@ -266,11 +289,11 @@
     const detailBody = document.querySelector("#detailTable tbody");
 
     detailHead.innerHTML =
-      "<tr>" + headers.map((h) => <th>${h}</th>).join("") + "</tr>";
+      "<tr>" + headers.map((h) => `<th>${h}</th>`).join("") + "</tr>";
 
     detailBody.innerHTML = filtered
       .slice(1)
-      .map((row) => <tr>${row.map((v) => <td>${v}</td>).join("")}</tr>)
+      .map((row) => `<tr>${row.map((v) => `<td>${v}</td>`).join("")}</tr>`)
       .join("");
 
     detailContainer.classList.add("active");
