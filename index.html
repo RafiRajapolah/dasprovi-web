@@ -117,7 +117,7 @@
       bodyRows.forEach((row)=>{
         while(row.length < 12) row.push('');
         const tr = document.createElement('tr');
-        const teknisiName = row[0];
+        const teknisiName = row[0].toString().trim().toUpperCase();
 
         row.forEach((val, colIndex)=>{
           const td = document.createElement('td');
@@ -132,7 +132,7 @@
             10:'SISA WO' 
           };
 
-          // Tambahkan event click hanya untuk kolom status
+          // Klik pada status kolom
           if (!isNaN(parseNumber(val)) && statusMap[colIndex]){
             td.classList.add('clickable');
             td.dataset.status = statusMap[colIndex];
@@ -144,10 +144,26 @@
               );
             });
           }
-          tr.appendChild(td);
+        tr.appendChild(td);
         });
+
         tbody.appendChild(tr);
       });
+
+      // Tambahkan event klik khusus baris TOTAL
+      const totalRow = [...tbody.querySelectorAll('tr')].find(tr => {
+        const name = tr.cells[0]?.textContent?.trim().toUpperCase();
+        return name === 'TOTAL';
+      });
+
+      if (totalRow) {
+        totalRow.querySelectorAll('.clickable').forEach(td => {
+          td.addEventListener('click', (e) => {
+            const status = e.currentTarget.dataset.status;
+            handleStatusClick(status, 'TOTAL');
+          });
+        });
+      }
 
     }catch(err){
       console.error(err);
@@ -176,11 +192,9 @@
 
     const t = (s)=> (s||'').toString().trim().toUpperCase();
     const teknisiUpper = (teknisi || '').toString().trim().toUpperCase();
+    const isTotalRow = teknisiUpper === 'TOTAL' || teknisiUpper === '';
 
     let filtered = [];
-
-    // Jika klik baris total, teknisi kosong → tampilkan semua teknisi
-    const isTotalRow = teknisiUpper === 'TOTAL' || teknisiUpper === '';
 
     switch(status){
       case 'SURVEY':
@@ -221,7 +235,6 @@
     container.scrollIntoView({ behavior:'smooth', block:'start' });
   }
 
-  // Jalankan saat halaman dibuka
   loadMainTable();
   </script>
 </body>
