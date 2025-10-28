@@ -9,46 +9,29 @@
     :root{
       --bg:#f4f7fb;
       --card:#ffffff;
-      --primary:#0a58a6; /* modern blue */
+      --primary:#0a58a6;
       --accent:#007bff;
       --muted:#9aa7bd;
       --shadow: 0 10px 30px rgba(12,40,80,0.06);
-      --radius:14px;
+      --radius:12px;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{
-      margin:0; font-family:Poppins,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial; background:var(--bg); color:#1f2937;
-      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-    }
+    body{ margin:0; font-family:Poppins,system-ui,Segoe UI,Roboto,Arial; background:var(--bg); color:#1f2937 }
 
-    /* layout */
-    .app{
-      max-width:1200px; margin:20px auto; padding:18px; display:flex; gap:18px; align-items:flex-start;
-    }
+    .app{ max-width:1200px; margin:20px auto; padding:18px; display:flex; gap:18px; align-items:flex-start }
 
-    /* Sidebar */
-    .sidebar{
-      width:68px; background:linear-gradient(180deg,var(--primary),var(--accent)); border-radius:12px; padding:12px; color:#fff; box-shadow:var(--shadow);
-      display:flex; flex-direction:column; gap:12px; align-items:center;
-    }
-    .sidebar .logo{ width:44px; height:44px; border-radius:10px; background:rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; font-weight:700 }
-    .sidebar a{ color:rgba(255,255,255,0.9); text-decoration:none; font-size:12px }
+    .sidebar{ width:68px; background:linear-gradient(180deg,var(--primary),var(--accent)); border-radius:12px; padding:12px; color:#fff; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:12px; align-items:center }
+    .logo{ width:44px; height:44px; border-radius:10px; background:rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; font-weight:700 }
 
-    /* Main card */
-    .main{
-      flex:1; background:var(--card); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow);
-    }
-
+    .main{ flex:1; background:var(--card); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow) }
     .header{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:14px }
     .title{ font-size:20px; font-weight:600 }
-
     .controls{ display:flex; gap:8px; align-items:center }
     .search{ display:flex; align-items:center; gap:8px; background:#f5f7fb; border-radius:10px; padding:6px 8px }
     .search input{ border:0; background:transparent; outline:none; font-size:14px; min-width:220px }
     .btn{ background:var(--primary); color:#fff; border:0; padding:8px 10px; border-radius:8px; cursor:pointer }
 
-    /* Table container */
     .table-wrap{ width:100%; overflow:auto; border-radius:12px }
     table{ width:100%; border-collapse:collapse; min-width:900px }
     thead th{ position:sticky; top:0; background:linear-gradient(180deg,var(--accent),var(--primary)); color:#fff; padding:12px 10px; text-transform:uppercase; font-size:12px }
@@ -56,11 +39,7 @@
     tbody tr:hover{ background:#f7fbff }
     td.clickable{ color:var(--accent); cursor:pointer; font-weight:600 }
 
-    /* Detail area */
     #detailContainer{ margin-top:14px; display:none }
-    #detailContainer .card{ padding:12px }
-
-    /* overlay loading */
     .overlay{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(12,20,40,0.25); z-index:9999; visibility:hidden; opacity:0; transition:all .18s }
     .overlay.active{ visibility:visible; opacity:1 }
     .spinner{ width:56px; height:56px; border-radius:50%; border:6px solid rgba(255,255,255,0.14); border-top-color:#fff; animation:spin 1s linear infinite }
@@ -68,19 +47,12 @@
 
     .error{ background:#fff4f6; color:#b91c1c; padding:10px; border-radius:8px; margin-bottom:8px; display:none }
 
-    /* responsive */
-    @media (max-width:900px){
-      .app{ padding:12px; margin:12px }
-      table{ min-width:800px }
-      .sidebar{ display:none }
-      .search input{ min-width:120px }
-      thead th, tbody td{ padding:10px }
-    }
-    @media (max-width:520px){
-      table{ min-width:700px }
-    }
-    table tr td:last-child, table tr th:last-child { display: none; }
-</style>
+    @media (max-width:900px){ .app{ padding:12px; margin:12px } table{ min-width:800px } .sidebar{ display:none } .search input{ min-width:120px } thead th, tbody td{ padding:10px } }
+    @media (max-width:520px){ table{ min-width:700px } }
+
+    /* We'll hide SISA WO column from rendering rather than via CSS. Keep rule for safety */
+    table tr td:last-child, table tr th:last-child { display:none }
+  </style>
 </head>
 <body>
   <div class="app">
@@ -127,18 +99,180 @@
   <div class="overlay" id="overlay"><div class="spinner" role="status" aria-label="loading"></div></div>
 
   <script>
-  // Configuration — public sheets (as provided)
+  // Config
   const SHEET_MAIN = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1651389267&single=true&output=csv";
   const SHEET_PROVI = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1451848426&single=true&output=csv";
+  const AUTO_REFRESH_MS = 60 * 1000; // 1 minute
+  const FETCH_TIMEOUT_MS = 15000; // 15s
 
-  // State
-  let cacheMain = null; let cacheProvi = null;
+  let cacheMain = null, cacheProvi = null, autoRefreshTimer = null;
   const overlay = document.getElementById('overlay');
   const errorBox = document.getElementById('errorBox');
 
-  function showLoading(){ overlay.classList.add('active'); }
-  function hideLoading(){ overlay.classList.remove('active'); }
+  function showLoading(){ overlay.classList.add('active') }
+  function hideLoading(){ overlay.classList.remove('active') }
   function showError(msg){ errorBox.style.display='block'; errorBox.textContent = msg }
   function clearError(){ errorBox.style.display='none'; errorBox.textContent = '' }
 
-  function parseNumber(v){ if (v
+  function parseNumber(v){ if (v === null || v === undefined) return 0; const s = String(v).replace(/[^0-9.-]+/g,''); const n = parseFloat(s); return isNaN(n)?0:n }
+
+  // fetch with timeout and optional CORS proxy fallback
+  async function fetchWithTimeout(url, opts = {}){
+    const controller = new AbortController();
+    const id = setTimeout(()=> controller.abort(), FETCH_TIMEOUT_MS);
+    try{
+      const res = await fetch(url, { signal: controller.signal, ...opts });
+      clearTimeout(id);
+      return res;
+    }catch(err){
+      clearTimeout(id);
+      throw err;
+    }
+  }
+
+  async function fetchCSV(url){
+    if (typeof navigator !== 'undefined' && !navigator.onLine) throw new Error('Anda sedang offline.');
+    try{
+      const res = await fetchWithTimeout(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      return Papa.parse(text.trim(), { header: false, skipEmptyLines: true }).data;
+    }catch(err){
+      console.warn('Direct fetch failed:', err.message || err);
+      // try proxy fallback
+      try{
+        const proxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+        const res2 = await fetchWithTimeout(proxy, { cache: 'no-store' });
+        if (!res2.ok) throw new Error('Proxy HTTP ' + res2.status);
+        const text2 = await res2.text();
+        return Papa.parse(text2.trim(), { header: false, skipEmptyLines: true }).data;
+      }catch(proxyErr){
+        throw new Error('Gagal unduh CSV. Pastikan Google Sheet dipublish (File → Publish to web) dan linknya dapat diakses. Detail: ' + (proxyErr.message || proxyErr));
+      }
+    }
+  }
+
+  // Build main table but SKIP rendering the last column (SISA WO) to remove the stray numbers
+  async function loadMainTable(){
+    clearError();
+    try{
+      showLoading();
+      if (typeof Papa === 'undefined') throw new Error('Library PapaParse belum dimuat.');
+
+      const [dataMain, dataProvi] = await Promise.all([fetchCSV(SHEET_MAIN), fetchCSV(SHEET_PROVI)]);
+      cacheMain = dataMain; cacheProvi = dataProvi;
+
+      // original: slice rows 2..17 (0-based) and columns C..M (2..12)
+      const rows = cacheMain.slice(2, 18).map(r => r.slice(2, 13));
+      const headers = rows[0] || [];
+      const bodyRows = rows.slice(1);
+
+      const thead = document.querySelector('#mainTable thead');
+      const tbody = document.querySelector('#mainTable tbody');
+
+      // Render headers but skip the last header (index 11)
+      const visibleHeaderCells = headers.map((h, i) => ({i, text: h||''})).filter(c => c.i !== 11);
+      thead.innerHTML = '<tr>' + visibleHeaderCells.map(c => `<th>${c.text}</th>`).join('') + '</tr>';
+
+      tbody.innerHTML = '';
+
+      bodyRows.forEach(row =>{
+        while(row.length < 12) row.push('');
+        const tselAO = parseNumber(row[1]); const tselMO = parseNumber(row[2]);
+        const indiAO = parseNumber(row[3]); const indiMO = parseNumber(row[4]);
+        const ps = parseNumber(row[9]); const kendala = parseNumber(row[10]);
+        const sisaWO = (tselAO + tselMO + indiAO + indiMO) - (ps + kendala);
+        row[11] = sisaWO; // keep value for totals but won't render column
+
+        const tr = document.createElement('tr');
+        // render cells except index 11
+        row.forEach((val, idx) =>{
+          if (idx === 11) return; // skip rendering SISA WO column
+          const td = document.createElement('td'); td.textContent = (val === null || val === undefined) ? '' : val;
+          // clickable mapping uses original column indices (5..10 relative to sliced array)
+          const statusMap = {5:'SURVEY',6:'TARIK DC',7:'SUDAH SC',8:'PS',9:'KENDALA',10:'SISA WO'};
+          if (!isNaN(parseNumber(val)) && statusMap[idx]){
+            td.classList.add('clickable'); td.dataset.status = statusMap[idx]; td.addEventListener('click', (e)=> handleStatusClick(e.currentTarget.dataset.status));
+          }
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+
+      // compute total for visible columns. We must compute totals per original column indices, but only render visible totals
+      // Build totals array length = headers.length (12), initialize zero
+      const totals = new Array(headers.length).fill(0);
+      Array.from(tbody.querySelectorAll('tr')).forEach(tr =>{
+        // Each tr currently has 11 cells (since we skipped last). We need to map back to original indices.
+        // We'll use original bodyRows to compute totals instead — safer.
+      });
+
+      // Compute totals from bodyRows data (use numeric parse)
+      const totalsFromData = new Array(headers.length).fill(0);
+      bodyRows.forEach(row =>{
+        for (let i=0;i<headers.length;i++){
+          totalsFromData[i] += parseNumber(row[i]);
+        }
+      });
+
+      // Create total row but render only visible columns (skip index 11)
+      const totalRow = document.createElement('tr');
+      visibleHeaderCells.forEach((c, idx) =>{
+        if (c.i === 0){
+          totalRow.appendChild(Object.assign(document.createElement('td'), { innerHTML: '<b>TOTAL</b>' }));
+        } else {
+          const val = totalsFromData[c.i];
+          totalRow.appendChild(Object.assign(document.createElement('td'), { innerHTML: c.i === 0 ? '<b>TOTAL</b>' : `<b>${val}</b>` }));
+        }
+      });
+      tbody.appendChild(totalRow);
+
+    }catch(err){
+      console.error(err);
+      showError('Terjadi kesalahan saat load data: ' + (err.message || err));
+    }finally{
+      hideLoading();
+    }
+  }
+
+  function handleStatusClick(status){ if (!cacheProvi){ showError('Data detail belum siap. Tekan Refresh.'); return; } showDetail(status); }
+
+  function showDetail(type){
+    const data = cacheProvi; if (!data || data.length === 0) return;
+    const headers = data[0]; const rows = data.slice(1); const STATUS_WO_INDEX = 7;
+    const t = s => (s||'').toString().trim().toUpperCase();
+    let filtered = [];
+    switch(type){
+      case 'SURVEY': case 'TARIK DC': case 'SUDAH SC': case 'PS': filtered = rows.filter(r => t(r[STATUS_WO_INDEX]) === type); break;
+      case 'KENDALA': filtered = rows.filter(r => ['KENDALA JARINGAN','KENDALA PELANGGAN'].includes(t(r[STATUS_WO_INDEX]))); break;
+      case 'SISA WO': filtered = rows.filter(r => !['PS','BAI','KENDALA JARINGAN','KENDALA PELANGGAN'].includes(t(r[STATUS_WO_INDEX]))); break;
+      default: filtered = [];
+    }
+
+    const container = document.getElementById('detailContainer'); const thead = document.querySelector('#detailTable thead'); const tbody = document.querySelector('#detailTable tbody');
+    thead.innerHTML = '<tr>' + (headers||[]).map(h => `<th>${h||''}</th>`).join('') + '</tr>';
+    tbody.innerHTML = filtered.map(r => `<tr>${r.map(c=>`<td>${c||''}</td>`).join('')}</tr>`).join('');
+    container.style.display = filtered.length ? 'block' : 'none'; container.scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  // search in detail (flexible)
+  function initSearch(){ const input = document.getElementById('searchDetail'); let t=null; input.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=> applySearch(input.value.trim()), 200); }); }
+  function applySearch(q){ const tbody = document.querySelector('#detailTable tbody'); if (!tbody) return; const rows = Array.from(tbody.querySelectorAll('tr')); if (!q){ rows.forEach(r=> r.style.display=''); return; } const ql=q.toLowerCase(); rows.forEach(r=>{ r.style.display = r.textContent.toLowerCase().includes(ql) ? '' : 'none'; }); }
+
+  document.getElementById('refreshBtn').addEventListener('click', ()=> loadMainTable());
+
+  function startAutoRefresh(){ if (autoRefreshTimer) clearInterval(autoRefreshTimer); autoRefreshTimer = setInterval(()=> loadMainTable(), AUTO_REFRESH_MS); }
+
+  // init
+  (function init(){
+    initSearch();
+    // load PapaParse
+    const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js';
+    s.onload = async ()=>{ try{ await loadMainTable(); startAutoRefresh(); }catch(e){ showError('Gagal inisialisasi: '+(e.message||e)); } };
+    s.onerror = ()=> showError('Gagal load library PapaParse. Periksa koneksi.');
+    document.body.appendChild(s);
+    window.addEventListener('beforeunload', ()=>{ if (autoRefreshTimer) clearInterval(autoRefreshTimer); });
+  })();
+  </script>
+</body>
+</html>
