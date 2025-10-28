@@ -115,7 +115,7 @@
           td.textContent = cell;
           if ([7,8,9,10,11,12].includes(j)) { // kolom H–M
             td.classList.add("clickable");
-            td.onclick = () => showDetail(row[3], j); // kolom D = nama teknisi
+            td.onclick = () => showDetail(row[2], j); // 🔹 kolom C = nama teknisi
           }
           tr.appendChild(td);
         });
