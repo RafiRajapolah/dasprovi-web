@@ -47,6 +47,7 @@
       transition: left 0.3s ease;
       z-index: 1000;
     }
+
     .sidebar.active {
       left: 0;
     }
@@ -64,6 +65,7 @@
       display: block;
       transition: background 0.2s;
     }
+
     .sidebar a:hover,
     .sidebar a.active {
       background: #145dbf;
@@ -110,7 +112,6 @@
       cursor: pointer;
       font-weight: bold;
     }
-
     #detailContainer {
       margin-top: 30px;
       background: white;
@@ -135,7 +136,7 @@
   <!-- Tombol buka sidebar -->
   <button class="menu-btn" id="menuBtn">☰</button>
 
-  <!-- SIDEBAR -->
+  <!-- SIDEBAR KIRI -->
   <div class="sidebar" id="sidebar">
     <h2>📊 Dashboard</h2>
     <a href="index.html" class="active">🏠 Das Provi</a>
@@ -164,9 +165,12 @@
   // === SIDEBAR TOGGLE ===
   const menuBtn = document.getElementById("menuBtn");
   const sidebar = document.getElementById("sidebar");
-  menuBtn.addEventListener("click", () => sidebar.classList.toggle("active"));
 
-  // === LINK DATA GOOGLE SHEETS ===
+  menuBtn.addEventListener("click", () => {
+    sidebar.classList.toggle("active");
+  });
+
+  // === DATA GOOGLE SHEETS ===
   const SHEET_MAIN =
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1651389267&single=true&output=csv";
   const SHEET_PROVI =
@@ -178,10 +182,8 @@
     return Papa.parse(text.trim(), { header: false }).data;
   }
 
-  // === FUNGSI UTAMA ===
   async function loadMainTable() {
     const data = await fetchCSV(SHEET_MAIN);
-
     const rows = data.slice(2, 18); // ambil baris 3–18
     const filtered = rows.map((row) => row.slice(2, 13)); // kolom C–M
 
@@ -190,61 +192,44 @@
 
     const headers = filtered[0];
     tableHead.innerHTML =
-      "<tr>" + headers.map((h) => `<th>${h}</th>`).join("") + "</tr>";
+      "<tr>" + headers.map((h) => <th>${h}</th>).join("") + "</tr>";
 
     tableBody.innerHTML = "";
-    let totalSisaWO = 0;
-
     filtered.slice(1).forEach((row) => {
       const tr = document.createElement("tr");
-
-      const tselAO = parseFloat(row[1]) || 0;
-      const tselMO = parseFloat(row[2]) || 0;
-      const indiAO = parseFloat(row[3]) || 0;
-      const indiMO = parseFloat(row[4]) || 0;
-      const ps = parseFloat(row[9]) || 0;
-      const kendala = parseFloat(row[10]) || 0;
-
-      const sisaWO = (tselAO + tselMO + indiAO + indiMO) - (ps + kendala);
-      totalSisaWO += sisaWO;
-      row[11] = sisaWO;
-
       row.forEach((value, colIndex) => {
         const td = document.createElement("td");
         td.textContent = value;
 
-        // Warna untuk kolom SISA WO
-        if (colIndex === 11) {
-          td.style.fontWeight = "bold";
-          td.style.color = sisaWO < 0 ? "red" : "#007bff";
+        const statusMap = {
+          5: "SURVEY",
+          6: "TARIK DC",
+          7: "SUDAH SC",
+          8: "PS",
+          9: "KENDALA",
+          10: "SISA WO",
+        };
+
+        if (!isNaN(value) && value.trim() !== "" && statusMap[colIndex]) {
+          td.classList.add("clickable");
+          td.addEventListener("click", () =>
+            showDetail(statusMap[colIndex], value)
+          );
         }
 
         tr.appendChild(td);
       });
       tableBody.appendChild(tr);
     });
-
-    // Baris total akhir
-    const totalRow = document.createElement("tr");
-    const totalCells = filtered[0].map((_, i) =>
-      i === 0
-        ? "<td><b>TOTAL</b></td>"
-        : i === 11
-        ? `<td><b>${totalSisaWO}</b></td>`
-        : "<td></td>"
-    );
-    totalRow.innerHTML = totalCells.join("");
-    totalRow.style.background = "#eaf3ff";
-    tableBody.appendChild(totalRow);
   }
 
-  // === DETAIL DATA ===
   async function showDetail(type, value) {
     const data = await fetchCSV(SHEET_PROVI);
     const headers = data[0];
-    const STATUS_WO_INDEX = 7;
+    const STATUS_WO_INDEX = 7; // kolom H di Provi_spa
 
     let filtered = [];
+
     switch (type) {
       case "SURVEY":
       case "TARIK DC":
@@ -281,17 +266,17 @@
     const detailBody = document.querySelector("#detailTable tbody");
 
     detailHead.innerHTML =
-      "<tr>" + headers.map((h) => `<th>${h}</th>`).join("") + "</tr>";
+      "<tr>" + headers.map((h) => <th>${h}</th>).join("") + "</tr>";
+
     detailBody.innerHTML = filtered
       .slice(1)
-      .map((row) => `<tr>${row.map((v) => `<td>${v}</td>`).join("")}</tr>`)
+      .map((row) => <tr>${row.map((v) => <td>${v}</td>).join("")}</tr>)
       .join("");
 
     detailContainer.classList.add("active");
     detailContainer.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  // === LOAD DATA ===
   const papaScript = document.createElement("script");
   papaScript.src =
     "https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js";
