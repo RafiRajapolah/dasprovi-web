@@ -2,431 +2,276 @@
 <html lang="id">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>DAS PROVI — Premium Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DAS PROVI — Modern Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg:#0f1724; /* dark bg for premium */
-      --card:#0b1220;
-      --glass: rgba(255,255,255,0.03);
-      --primary:#1e90ff; /* bright blue */
-      --muted:#94a3b8;
-      --accent:#60a5fa;
-      --radius:14px;
-      --glass-2: rgba(255,255,255,0.02);
-      --shadow: 0 10px 40px rgba(2,6,23,0.6);
-      color-scheme: dark;
+      --bg:#f4f7fb;
+      --card:#ffffff;
+      --primary:#0a58a6;
+      --accent:#007bff;
+      --muted:#9aa7bd;
+      --shadow: 0 10px 30px rgba(12,40,80,0.06);
+      --radius:12px;
     }
     *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:Poppins,system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#071426 0%, #081227 60%);color:#e6eefc}
-    .wrap{max-width:1300px;margin:28px auto;padding:20px}
-    .header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
-    .brand{display:flex;flex-direction:column}
-    .brand h1{margin:0;font-size:20px;letter-spacing:0.2px}
-    .brand p{margin:4px 0 0 0;color:var(--muted);font-size:13px}
-    .controls{display:flex;gap:10px;align-items:center}
-    .search{display:flex;align-items:center;background:var(--glass);padding:8px 10px;border-radius:10px;backdrop-filter: blur(4px);border:1px solid rgba(255,255,255,0.02)}
-    .search input{background:transparent;border:0;outline:none;color:var(--muted);min-width:220px}
-    .btn{background:linear-gradient(90deg,var(--primary),var(--accent));border:0;padding:8px 12px;border-radius:10px;color:#04102a;cursor:pointer;font-weight:600;box-shadow:0 6px 18px rgba(30,144,255,0.12)}
-    .cards{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.015));padding:12px 16px;border-radius:12px;min-width:110px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,0.02)}
-    .card .label{font-size:12px;color:var(--muted);margin-bottom:6px}
-    .card .value{font-size:20px;font-weight:700;color:var(--primary)}
-    .panel{background:linear-gradient(180deg,var(--card), rgba(255,255,255,0.02));border-radius:14px;padding:16px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 12px 40px rgba(2,6,23,0.6)}
-    .table-wrap{overflow:auto;margin-top:6px;border-radius:10px}
-    table{width:100%;border-collapse:collapse;min-width:1000px}
-    thead th{position:sticky;top:0;padding:12px 10px;background:linear-gradient(180deg,#08243b,#07172a);color:var(--primary);font-size:12px;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,0.03)}
-    tbody td{padding:12px 10px;border-bottom:1px solid rgba(255,255,255,0.02);text-align:center;font-size:13px;color:#d7e8ff}
-    tbody tr:hover{background:linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.006))}
-    td.clickable{cursor:pointer;opacity:0.95}
-    td.sisa{font-weight:700;color:var(--primary)}
-    tfoot td{padding:12px 10px;border-top:2px solid rgba(255,255,255,0.03);font-weight:700;color:#9ecbff}
-    #detailContainer{margin-top:14px;display:none}
-    .overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.6);visibility:hidden;opacity:0;transition:all .18s;z-index:9999}
-    .overlay.active{visibility:visible;opacity:1}
-    .spinner{width:72px;height:72px;border-radius:50%;border:8px solid rgba(255,255,255,0.06);border-top-color:var(--primary);animation:spin 1s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .note{color:var(--muted);font-size:13px;margin-top:6px}
-    @media (max-width:1000px){ .cards{justify-content:flex-start} .search input{min-width:140px} table{min-width:900px} }
+    html,body{height:100%}
+    body{ margin:0; font-family:Poppins,system-ui,Segoe UI,Roboto,Arial; background:var(--bg); color:#1f2937 }
+
+    .app{ max-width:1200px; margin:20px auto; padding:18px; display:flex; gap:18px; align-items:flex-start }
+
+    .sidebar{ width:68px; background:linear-gradient(180deg,var(--primary),var(--accent)); border-radius:12px; padding:12px; color:#fff; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:12px; align-items:center }
+    .logo{ width:44px; height:44px; border-radius:10px; background:rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; font-weight:700 }
+
+    .main{ flex:1; background:var(--card); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow) }
+    .header{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:14px }
+    .title{ font-size:20px; font-weight:600 }
+    .controls{ display:flex; gap:8px; align-items:center }
+    .search{ display:flex; align-items:center; gap:8px; background:#f5f7fb; border-radius:10px; padding:6px 8px }
+    .search input{ border:0; background:transparent; outline:none; font-size:14px; min-width:220px }
+    .btn{ background:var(--primary); color:#fff; border:0; padding:8px 10px; border-radius:8px; cursor:pointer }
+
+    .table-wrap{ width:100%; overflow:auto; border-radius:12px }
+    table{ width:100%; border-collapse:collapse; min-width:900px }
+    thead th{ position:sticky; top:0; background:linear-gradient(180deg,var(--accent),var(--primary)); color:#fff; padding:12px 10px; text-transform:uppercase; font-size:12px }
+    tbody td{ padding:12px 10px; border-bottom:1px solid #f0f3f8; font-size:13px; text-align:center }
+    tbody tr:hover{ background:#f7fbff }
+    td.clickable{ color:var(--accent); cursor:pointer; font-weight:600 }
+
+    #detailContainer{ margin-top:14px; display:none }
+    .overlay{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(12,20,40,0.25); z-index:9999; visibility:hidden; opacity:0; transition:all .18s }
+    .overlay.active{ visibility:visible; opacity:1 }
+    .spinner{ width:56px; height:56px; border-radius:50%; border:6px solid rgba(255,255,255,0.14); border-top-color:#fff; animation:spin 1s linear infinite }
+    @keyframes spin{ to{ transform:rotate(360deg) } }
+
+    .error{ background:#fff4f6; color:#b91c1c; padding:10px; border-radius:8px; margin-bottom:8px; display:none }
+
+    @media (max-width:900px){ .app{ padding:12px; margin:12px } table{ min-width:800px } .sidebar{ display:none } .search input{ min-width:120px } thead th, tbody td{ padding:10px } }
+    @media (max-width:520px){ table{ min-width:700px } }
+
+    /* We'll hide SISA WO column from rendering rather than via CSS. Keep rule for safety */
+    table tr td:last-child, table tr th:last-child { display:none }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="header">
-      <div class="brand">
-        <h1>DAS PROVI — Premium</h1>
-        <div class="note">SISA WO = (TSEL AO + INDIBIZ AO) + (TSEL MO + INDIBIZ MO) + SURVEY + TARIK DC + BAI - PS + KENDALA</div>
-      </div>
+  <div class="app">
+    <nav class="sidebar" aria-hidden="false">
+      <div class="logo">DP</div>
+      <a href="#" title="Dashboard">🏠</a>
+      <a href="#" title="Provi SPA">📋</a>
+      <a href="#" title="Monet">💰</a>
+    </nav>
 
-      <div class="controls">
-        <div class="search" title="Search detail">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="opacity:.9"><path d="M21 21l-4.35-4.35" stroke="#9fbbe8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <input id="searchDetail" placeholder="Cari di detail (ketik bebas)..." aria-label="search" />
+    <main class="main" role="main">
+      <div class="header">
+        <div>
+          <div class="title">Dashboard Provisioning</div>
+          <div style="color:var(--muted); font-size:13px; margin-top:4px">Ringkasan & Sisa WO — Responsive & Modern</div>
         </div>
-        <button id="refreshBtn" class="btn">🔄 Refresh</button>
+        <div class="controls">
+          <div class="search" role="search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 21l-4.35-4.35" stroke="#6b7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <input id="searchDetail" placeholder="Cari di detail (ketik bebas)..." aria-label="search" />
+          </div>
+          <button id="refreshBtn" class="btn" title="Refresh sekarang">🔄 Refresh</button>
+        </div>
       </div>
-    </div>
 
-    <div id="summary" class="cards" aria-hidden="false"></div>
+      <div id="errorBox" class="error" role="alert"></div>
 
-    <div class="panel">
-      <div id="errorBox" style="display:none;background:#2b0f17;color:#ffb3b3;padding:10px;border-radius:10px;margin-bottom:12px"></div>
-
-      <div class="table-wrap">
+      <div class="table-wrap card" aria-live="polite">
         <table id="mainTable" role="table">
-          <thead>
-            <tr>
-              <th>Teknisi</th>
-              <th>AO</th>
-              <th>MO</th>
-              <th>Survey</th>
-              <th>Tarik DC</th>
-              <th>BAI</th>
-              <th>PS</th>
-              <th>Kendala</th>
-              <th>SISA WO</th>
-            </tr>
-          </thead>
+          <thead></thead>
           <tbody></tbody>
-          <tfoot></tfoot>
         </table>
       </div>
 
-      <div id="detailContainer" style="margin-top:14px;display:none">
-        <h3 style="margin:0 0 10px 0;color:var(--primary)">Detail (filter per teknisi + status)</h3>
-        <div style="overflow:auto;max-height:360px">
+      <div id="detailContainer" class="card">
+        <h3 style="margin-top:0; color:var(--primary)">Detail Data</h3>
+        <div style="overflow:auto; max-height:360px">
           <table id="detailTable"><thead></thead><tbody></tbody></table>
         </div>
       </div>
-    </div>
+    </main>
   </div>
 
   <div class="overlay" id="overlay"><div class="spinner" role="status" aria-label="loading"></div></div>
 
   <script>
-  // ====== CONFIG ======
+  // Config
   const SHEET_MAIN = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1651389267&single=true&output=csv";
   const SHEET_PROVI = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1451848426&single=true&output=csv";
-  const HEADER_ROW_INDEX = 3; // zero-based (row 4 in spreadsheet)
-  const DATA_START_ROW_INDEX = 4; // zero-based (row 5)
-  const SLICE_COL_START = 2; // C (zero-based)
-  const SLICE_COL_END = 13; // M -> slice end index (exclusive)
-  const AUTO_REFRESH_MS = 60 * 1000;
-  const FETCH_TIMEOUT_MS = 15000;
+  const AUTO_REFRESH_MS = 60 * 1000; // 1 minute
+  const FETCH_TIMEOUT_MS = 15000; // 15s
 
-  // ====== STATE ======
-  let cacheMain = null;
-  let cacheProvi = null;
-  let autoRefreshTimer = null;
-
+  let cacheMain = null, cacheProvi = null, autoRefreshTimer = null;
   const overlay = document.getElementById('overlay');
   const errorBox = document.getElementById('errorBox');
-  const mainTbody = document.querySelector('#mainTable tbody');
-  const mainTfoot = document.querySelector('#mainTable tfoot');
-  const detailContainer = document.getElementById('detailContainer');
-  const detailThead = document.querySelector('#detailTable thead');
-  const detailTbody = document.querySelector('#detailTable tbody');
-  const summary = document.getElementById('summary');
-  const searchInput = document.getElementById('searchDetail');
 
   function showLoading(){ overlay.classList.add('active') }
   function hideLoading(){ overlay.classList.remove('active') }
-  function showError(msg, autoHide = true){
-    errorBox.style.display = 'block';
-    errorBox.textContent = msg;
-    if (autoHide) setTimeout(()=> errorBox.style.display='none', 8000);
-  }
+  function showError(msg){ errorBox.style.display='block'; errorBox.textContent = msg }
   function clearError(){ errorBox.style.display='none'; errorBox.textContent = '' }
 
-  // safe numeric parse (digit-by-digit sanity)
-  function parseNumber(v){
-    if (v === null || v === undefined) return 0;
-    let s = String(v).trim();
-    if (s === '') return 0;
-    // keep digits, minus, dot
-    s = s.replace(/[^0-9.-]+/g,'');
-    // handle multiple dots/hyphens defensively
-    const minus = s.startsWith('-') ? '-' : '';
-    s = s.replace(/-/g,'');
-    const parts = s.split('.');
-    if (parts.length > 1) {
-      // keep first dot only
-      s = parts.shift() + '.' + parts.join('');
-    } else s = parts[0];
-    const n = parseFloat(minus + s);
-    return isNaN(n) ? 0 : n;
-  }
+  function parseNumber(v){ if (v === null || v === undefined) return 0; const s = String(v).replace(/[^0-9.-]+/g,''); const n = parseFloat(s); return isNaN(n)?0:n }
 
-  // fetch with timeout; fallback to public proxy if direct fails
-  async function fetchWithTimeout(url, opts={}){
+  // fetch with timeout and optional CORS proxy fallback
+  async function fetchWithTimeout(url, opts = {}){
     const controller = new AbortController();
     const id = setTimeout(()=> controller.abort(), FETCH_TIMEOUT_MS);
     try{
-      const r = await fetch(url, { signal: controller.signal, ...opts });
+      const res = await fetch(url, { signal: controller.signal, ...opts });
       clearTimeout(id);
-      return r;
-    }catch(e){
+      return res;
+    }catch(err){
       clearTimeout(id);
-      throw e;
+      throw err;
     }
   }
 
   async function fetchCSV(url){
-    if (typeof navigator !== 'undefined' && !navigator.onLine) throw new Error('Browser offline — periksa koneksi internet.');
+    if (typeof navigator !== 'undefined' && !navigator.onLine) throw new Error('Anda sedang offline.');
     try{
       const res = await fetchWithTimeout(url, { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const text = await res.text();
       return Papa.parse(text.trim(), { header: false, skipEmptyLines: true }).data;
     }catch(err){
-      // try proxy fallback (AllOrigins)
+      console.warn('Direct fetch failed:', err.message || err);
+      // try proxy fallback
       try{
-        const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-        const res2 = await fetchWithTimeout(proxyUrl, { cache: 'no-store' });
+        const proxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+        const res2 = await fetchWithTimeout(proxy, { cache: 'no-store' });
         if (!res2.ok) throw new Error('Proxy HTTP ' + res2.status);
         const text2 = await res2.text();
         return Papa.parse(text2.trim(), { header: false, skipEmptyLines: true }).data;
       }catch(proxyErr){
-        throw new Error('Gagal unduh CSV. Pastikan Google Sheet sudah Publish to web (CSV). Detail: ' + (proxyErr.message || proxyErr));
+        throw new Error('Gagal unduh CSV. Pastikan Google Sheet dipublish (File → Publish to web) dan linknya dapat diakses. Detail: ' + (proxyErr.message || proxyErr));
       }
     }
   }
 
-  function findIndexByCandidates(headers, candidates){
-    if (!headers) return -1;
-    const lower = headers.map(h => (h||'').toString().toLowerCase());
-    for (const cand of candidates){
-      const c = cand.toLowerCase();
-      for (let i=0;i<lower.length;i++){
-        if (lower[i].includes(c) || c.includes(lower[i])) return i;
-      }
-    }
-    return -1;
-  }
-
-  // render numeric summary cards (order fixed)
-  function renderSummaryCards(totals){
-    const order = [
-      {k:'AO', label:'AO'},
-      {k:'MO', label:'MO'},
-      {k:'Survey', label:'Survey'},
-      {k:'Tarik', label:'Tarik DC'},
-      {k:'BAI', label:'BAI'},
-      {k:'PS', label:'PS'},
-      {k:'Kendala', label:'Kendala'},
-      {k:'Sisa', label:'SISA WO'}
-    ];
-    summary.innerHTML = '';
-    order.forEach(o=>{
-      const el = document.createElement('div');
-      el.className = 'card';
-      el.innerHTML = `<div class="label">${o.label}</div><div class="value">${totals[o.k] ?? 0}</div>`;
-      summary.appendChild(el);
-    });
-  }
-
-  // Main load + render function
+  // Build main table but SKIP rendering the last column (SISA WO) to remove the stray numbers
   async function loadMainTable(){
     clearError();
-    showLoading();
     try{
+      showLoading();
       if (typeof Papa === 'undefined') throw new Error('Library PapaParse belum dimuat.');
-      const [dm, dp] = await Promise.all([fetchCSV(SHEET_MAIN), fetchCSV(SHEET_PROVI)]);
-      cacheMain = dm;
-      cacheProvi = dp;
 
-      // ensure we have enough rows
-      if (cacheMain.length <= HEADER_ROW_INDEX) throw new Error('CSV utama tidak memiliki header pada baris yang diharapkan.');
+      const [dataMain, dataProvi] = await Promise.all([fetchCSV(SHEET_MAIN), fetchCSV(SHEET_PROVI)]);
+      cacheMain = dataMain; cacheProvi = dataProvi;
 
-      // take rows starting from header row INDEX and data after
-      // But earlier we used slice C..M -> column start 2 end 13
-      // Build sliced rows from header row (row index HEADER_ROW_INDEX) to data rows starting DATA_START_ROW_INDEX
-      const headerRow = cacheMain[HEADER_ROW_INDEX] || [];
-      const dataRows = cacheMain.slice(DATA_START_ROW_INDEX);
+      // original: slice rows 2..17 (0-based) and columns C..M (2..12)
+      const rows = cacheMain.slice(2, 18).map(r => r.slice(2, 13));
+      const headers = rows[0] || [];
+      const bodyRows = rows.slice(1);
 
-      // map each data row to sliced columns C..M (2..13 exclusive)
-      const slicedRows = dataRows.map(r => (Array.isArray(r) ? r.slice(SLICE_COL_START, SLICE_COL_END) : []));
+      const thead = document.querySelector('#mainTable thead');
+      const tbody = document.querySelector('#mainTable tbody');
 
-      // ensure slicedRows exist
-      if (!slicedRows || slicedRows.length === 0) throw new Error('Tidak ada data pada rentang baris yang ditentukan.');
+      // Render headers but skip the last header (index 11)
+      const visibleHeaderCells = headers.map((h, i) => ({i, text: h||''})).filter(c => c.i !== 11);
+      thead.innerHTML = '<tr>' + visibleHeaderCells.map(c => `<th>${c.text}</th>`).join('') + '</tr>';
 
-      // Use header labels from headerRow (slice same columns) if available
-      const headerSlice = (headerRow.slice ? headerRow.slice(SLICE_COL_START, SLICE_COL_END) : []);
-      // We'll render fixed header labels to ensure correct columns for user expectation
-      document.querySelector('#mainTable thead tr').innerHTML = `
-        <th>Teknisi</th>
-        <th>AO</th>
-        <th>MO</th>
-        <th>Survey</th>
-        <th>Tarik DC</th>
-        <th>BAI</th>
-        <th>PS</th>
-        <th>Kendala</th>
-        <th>SISA WO</th>
-      `;
+      tbody.innerHTML = '';
 
-      // Build table body
-      mainTbody.innerHTML = '';
-      const totals = {AO:0, MO:0, Survey:0, Tarik:0, BAI:0, PS:0, Kendala:0, Sisa:0};
-
-      for (const row of slicedRows){
-        // ensure length
-        while (row.length < (SLICE_COL_END - SLICE_COL_START)) row.push('');
-        // mapping inside slice:
-        // 0:TEKNISI,1:TSEL AO,2:TSEL MO,3:INDI AO,4:INDI MO,5:SURVEY,6:TARIK DC,7:BAI,8:PS,9:KENDALA,10:SISA WO (if present)
-        const teknisi = row[0] || '';
-        const tselAO = parseNumber(row[1]);
-        const tselMO = parseNumber(row[2]);
-        const indiAO = parseNumber(row[3]);
-        const indiMO = parseNumber(row[4]);
-        const survey = parseNumber(row[5]);
-        const tarik = parseNumber(row[6]);
-        const bai = parseNumber(row[7]);
-        const ps = parseNumber(row[8]);
-        const kendala = parseNumber(row[9]);
-        // compute AO and MO totals (sum TSEL + INDIBIZ)
-        const AO = tselAO + indiAO;
-        const MO = tselMO + indiMO;
-        const Sisa = AO + MO + survey + tarik + bai - ps + kendala;
-
-        totals.AO += AO; totals.MO += MO; totals.Survey += survey; totals.Tarik += tarik;
-        totals.BAI += bai; totals.PS += ps; totals.Kendala += kendala; totals.Sisa += Sisa;
+      bodyRows.forEach(row =>{
+        while(row.length < 12) row.push('');
+        const tselAO = parseNumber(row[1]); const tselMO = parseNumber(row[2]);
+        const indiAO = parseNumber(row[3]); const indiMO = parseNumber(row[4]);
+        const ps = parseNumber(row[9]); const kendala = parseNumber(row[10]);
+        const sisaWO = (tselAO + tselMO + indiAO + indiMO) - (ps + kendala);
+        row[11] = sisaWO; // keep value for totals but won't render column
 
         const tr = document.createElement('tr');
-        // cells: Tek | AO | MO | Survey | Tarik | BAI | PS | Kendala | Sisa
-        const cvals = [
-          {v:teknisi},
-          {v:AO, status:'AO'},
-          {v:MO, status:'MO'},
-          {v:survey, status:'SURVEY'},
-          {v:tarik, status:'TARIK DC'},
-          {v:bai, status:'BAI'},
-          {v:ps, status:'PS'},
-          {v:kendala, status:'KENDALA'},
-          {v:Sisa, status:'SISA WO', cls:'sisa'}
-        ];
-
-        cvals.forEach((c)=>{
-          const td = document.createElement('td');
-          td.textContent = c.v;
-          if (c.cls) td.classList.add(c.cls);
-          if (c.status){
-            td.classList.add('clickable');
-            td.dataset.status = c.status;
-            td.dataset.teknisi = teknisi;
-            td.addEventListener('click', ()=> handleStatusClick(c.status, teknisi));
+        // render cells except index 11
+        row.forEach((val, idx) =>{
+          if (idx === 11) return; // skip rendering SISA WO column
+          const td = document.createElement('td'); td.textContent = (val === null || val === undefined) ? '' : val;
+          // clickable mapping uses original column indices (5..10 relative to sliced array)
+          const statusMap = {5:'SURVEY',6:'TARIK DC',7:'SUDAH SC',8:'PS',9:'KENDALA',10:'SISA WO'};
+          if (!isNaN(parseNumber(val)) && statusMap[idx]){
+            td.classList.add('clickable'); td.dataset.status = statusMap[idx]; td.addEventListener('click', (e)=> handleStatusClick(e.currentTarget.dataset.status));
           }
           tr.appendChild(td);
         });
+        tbody.appendChild(tr);
+      });
 
-        mainTbody.appendChild(tr);
-      }
+      // compute total for visible columns. We must compute totals per original column indices, but only render visible totals
+      // Build totals array length = headers.length (12), initialize zero
+      const totals = new Array(headers.length).fill(0);
+      Array.from(tbody.querySelectorAll('tr')).forEach(tr =>{
+        // Each tr currently has 11 cells (since we skipped last). We need to map back to original indices.
+        // We'll use original bodyRows to compute totals instead — safer.
+      });
 
-      // single TOTAL row
-      mainTfoot.innerHTML = '';
-      const trow = document.createElement('tr');
-      trow.innerHTML = `
-        <td><strong>TOTAL</strong></td>
-        <td><strong>${totals.AO}</strong></td>
-        <td><strong>${totals.MO}</strong></td>
-        <td><strong>${totals.Survey}</strong></td>
-        <td><strong>${totals.Tarik}</strong></td>
-        <td><strong>${totals.BAI}</strong></td>
-        <td><strong>${totals.PS}</strong></td>
-        <td><strong>${totals.Kendala}</strong></td>
-        <td class="sisa"><strong>${totals.Sisa}</strong></td>
-      `;
-      mainTfoot.appendChild(trow);
+      // Compute totals from bodyRows data (use numeric parse)
+      const totalsFromData = new Array(headers.length).fill(0);
+      bodyRows.forEach(row =>{
+        for (let i=0;i<headers.length;i++){
+          totalsFromData[i] += parseNumber(row[i]);
+        }
+      });
 
-      // numeric summary cards
-      renderSummaryCards(totals);
-
-      // cache provi
-      cacheProvi = dp;
-
-      // hide detail initially
-      detailContainer.style.display = 'none';
+      // Create total row but render only visible columns (skip index 11)
+      const totalRow = document.createElement('tr');
+      visibleHeaderCells.forEach((c, idx) =>{
+        if (c.i === 0){
+          totalRow.appendChild(Object.assign(document.createElement('td'), { innerHTML: '<b>TOTAL</b>' }));
+        } else {
+          const val = totalsFromData[c.i];
+          totalRow.appendChild(Object.assign(document.createElement('td'), { innerHTML: c.i === 0 ? '<b>TOTAL</b>' : `<b>${val}</b>` }));
+        }
+      });
+      tbody.appendChild(totalRow);
 
     }catch(err){
       console.error(err);
-      showError('Gagal load data: ' + (err.message || err));
+      showError('Terjadi kesalahan saat load data: ' + (err.message || err));
     }finally{
       hideLoading();
     }
   }
 
-  // Filter detail by status + teknisi
-  function handleStatusClick(status, teknisi){
-    if (!cacheProvi || cacheProvi.length === 0){
-      showError('Data detail tidak tersedia. Tekan Refresh.', true);
-      return;
+  function handleStatusClick(status){ if (!cacheProvi){ showError('Data detail belum siap. Tekan Refresh.'); return; } showDetail(status); }
+
+  function showDetail(type){
+    const data = cacheProvi; if (!data || data.length === 0) return;
+    const headers = data[0]; const rows = data.slice(1); const STATUS_WO_INDEX = 7;
+    const t = s => (s||'').toString().trim().toUpperCase();
+    let filtered = [];
+    switch(type){
+      case 'SURVEY': case 'TARIK DC': case 'SUDAH SC': case 'PS': filtered = rows.filter(r => t(r[STATUS_WO_INDEX]) === type); break;
+      case 'KENDALA': filtered = rows.filter(r => ['KENDALA JARINGAN','KENDALA PELANGGAN'].includes(t(r[STATUS_WO_INDEX]))); break;
+      case 'SISA WO': filtered = rows.filter(r => !['PS','BAI','KENDALA JARINGAN','KENDALA PELANGGAN'].includes(t(r[STATUS_WO_INDEX]))); break;
+      default: filtered = [];
     }
-    const headers = cacheProvi[0] || [];
-    const rows = cacheProvi.slice(1);
 
-    // find status column index heuristically
-    const statusIdx = findIndexByCandidates(headers, ['status','status wo','status_wo','status wo','status_work']);
-    const statusColumn = statusIdx >= 0 ? statusIdx : 7; // fallback 7 (H) like earlier
-
-    // find possible teknisi column in detail sheet
-    const teknisiIdx = findIndexByCandidates(headers, ['teknisi','nama teknisi','pic','assigned to','teknisi','engineer','petugas']);
-
-    const filtered = rows.filter(r => {
-      const sVal = (r[statusColumn]||'').toString().trim().toUpperCase();
-      let match = false;
-      if (status === 'KENDALA') match = ['KENDALA JARINGAN','KENDALA PELANGGAN'].includes(sVal);
-      else if (status === 'SISA WO') match = !['PS','BAI','KENDALA JARINGAN','KENDALA PELANGGAN'].includes(sVal);
-      else match = sVal === status;
-      if (!match) return false;
-      if (teknisi && teknisiIdx >= 0){
-        const tVal = (r[teknisiIdx]||'').toString().trim();
-        return tVal === teknisi;
-      }
-      return true;
-    });
-
-    // render detail table
-    detailThead.innerHTML = '<tr>' + (headers || []).map(h => `<th>${h||''}</th>`).join('') + '</tr>';
-    detailTbody.innerHTML = filtered.map(r => `<tr>${r.map(c=>`<td>${c||''}</td>`).join('')}</tr>`).join('');
-    detailContainer.style.display = filtered.length ? 'block' : 'none';
-    detailContainer.scrollIntoView({behavior:'smooth', block:'start'});
+    const container = document.getElementById('detailContainer'); const thead = document.querySelector('#detailTable thead'); const tbody = document.querySelector('#detailTable tbody');
+    thead.innerHTML = '<tr>' + (headers||[]).map(h => `<th>${h||''}</th>`).join('') + '</tr>';
+    tbody.innerHTML = filtered.map(r => `<tr>${r.map(c=>`<td>${c||''}</td>`).join('')}</tr>`).join('');
+    container.style.display = filtered.length ? 'block' : 'none'; container.scrollIntoView({ behavior:'smooth', block:'start' });
   }
 
-  // search within detail
-  function applySearch(q){
-    const t = (q||'').toString().trim().toLowerCase();
-    if (!t){ Array.from(detailTbody.querySelectorAll('tr')).forEach(tr => tr.style.display = ''); return; }
-    Array.from(detailTbody.querySelectorAll('tr')).forEach(tr => {
-      tr.style.display = tr.textContent.toLowerCase().includes(t) ? '' : 'none';
-    });
-  }
+  // search in detail (flexible)
+  function initSearch(){ const input = document.getElementById('searchDetail'); let t=null; input.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=> applySearch(input.value.trim()), 200); }); }
+  function applySearch(q){ const tbody = document.querySelector('#detailTable tbody'); if (!tbody) return; const rows = Array.from(tbody.querySelectorAll('tr')); if (!q){ rows.forEach(r=> r.style.display=''); return; } const ql=q.toLowerCase(); rows.forEach(r=>{ r.style.display = r.textContent.toLowerCase().includes(ql) ? '' : 'none'; }); }
+
+  document.getElementById('refreshBtn').addEventListener('click', ()=> loadMainTable());
+
+  function startAutoRefresh(){ if (autoRefreshTimer) clearInterval(autoRefreshTimer); autoRefreshTimer = setInterval(()=> loadMainTable(), AUTO_REFRESH_MS); }
 
   // init
   (function init(){
-    // wire UI
-    document.getElementById('refreshBtn').addEventListener('click', ()=> loadMainTable());
-    searchInput.addEventListener('input', e => {
-      clearTimeout(window._searchTimer);
-      window._searchTimer = setTimeout(()=> applySearch(e.target.value), 200);
-    });
-
+    initSearch();
     // load PapaParse
-    const s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js';
-    s.onload = async ()=> {
-      try{
-        await loadMainTable();
-        if (autoRefreshTimer) clearInterval(autoRefreshTimer);
-        autoRefreshTimer = setInterval(()=> loadMainTable(), AUTO_REFRESH_MS);
-      }catch(e){
-        showError('Inisialisasi gagal: ' + (e.message || e));
-      }
-    };
-    s.onerror = ()=> showError('Gagal load PapaParse. Periksa koneksi internet atau izin akses sheet.');
+    const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js';
+    s.onload = async ()=>{ try{ await loadMainTable(); startAutoRefresh(); }catch(e){ showError('Gagal inisialisasi: '+(e.message||e)); } };
+    s.onerror = ()=> showError('Gagal load library PapaParse. Periksa koneksi.');
     document.body.appendChild(s);
-
-    window.addEventListener('beforeunload', ()=> { if (autoRefreshTimer) clearInterval(autoRefreshTimer); });
+    window.addEventListener('beforeunload', ()=>{ if (autoRefreshTimer) clearInterval(autoRefreshTimer); });
   })();
   </script>
 </body>
