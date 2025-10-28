@@ -79,7 +79,8 @@
     @media (max-width:520px){
       table{ min-width:700px }
     }
-  </style>
+    table tr td:last-child, table tr th:last-child { display: none; }
+</style>
 </head>
 <body>
   <div class="app">
@@ -163,66 +164,7 @@
       const headers = rows[0] || []; const bodyRows = rows.slice(1);
 
       const thead = document.querySelector('#mainTable thead'); const tbody = document.querySelector('#mainTable tbody');
-      thead.innerHTML = '<tr>' + headers.map(h=>`<th>${h||''}</th>`).join('') + '</tr>';
-      tbody.innerHTML = '';
-
-      bodyRows.forEach(row=>{
-        while(row.length < 12) row.push('');
-        const tselAO = parseNumber(row[1]); const tselMO = parseNumber(row[2]);
-        const indiAO = parseNumber(row[3]); const indiMO = parseNumber(row[4]);
-        const ps = parseNumber(row[9]); const kendala = parseNumber(row[10]);
-        const sisaWO = (tselAO + tselMO + indiAO + indiMO) - (ps + kendala);
-        row[11] = sisaWO; // ensure value present
-
-        const tr = document.createElement('tr');
-        row.forEach((val,colIndex)=>{
-          const td = document.createElement('td'); td.textContent = (val==null)?'':val;
-          const statusMap = {5:'SURVEY',6:'TARIK DC',7:'SUDAH SC',8:'PS',9:'KENDALA',10:'SISA WO'};
-          if (!isNaN(parseNumber(val)) && statusMap[colIndex]){
-            td.classList.add('clickable'); td.dataset.status = statusMap[colIndex];
-            td.addEventListener('click', (e)=> handleStatusClick(e.currentTarget.dataset.status));
-          }
-          tr.appendChild(td);
-        });
-        tbody.appendChild(tr);
-      });
-
-      // compute total per numeric column (columns that contain numbers)
-      const totalRow = document.createElement('tr'); totalRow.style.fontWeight='700';
-      const firstCol = document.createElement('td'); firstCol.textContent='TOTAL'; firstCol.style.textAlign='center'; totalRow.appendChild(firstCol);
-
-      // for remaining header count - 1 because first used by label
-      for(let c=1;c<headers.length;c++){
-        // sum column c across body rows
-        const sum = Array.from(tbody.querySelectorAll('tr')).reduce((acc,tr)=>{ const cell = tr.children[c]; if(!cell) return acc; return acc + parseNumber(cell.textContent||0); },0);
-        const td = document.createElement('td'); td.textContent = sum; td.style.textAlign='center'; totalRow.appendChild(td);
-      }
-      tbody.appendChild(totalRow);
-
-      // hide detail container initially
-      document.getElementById('detailContainer').style.display='none';
-
-    }catch(err){ console.error(err); showError('Gagal memuat data: ' + (err.message||err)); }
-    finally{ hideLoading(); }
-  }
-
-  function handleStatusClick(status){ if(!cacheProvi){ showError('Data detail belum tersedia - tekan Refresh.'); return;} showDetail(status); }
-
-  function showDetail(type){
-    clearError();
-    const data = cacheProvi; if(!data||data.length===0){ showError('Data detail kosong.'); return; }
-    const headers = data[0]; const rows = data.slice(1); const STATUS_WO_INDEX = 7;
-    const t = s=> (s||'').toString().trim().toUpperCase();
-    let filtered = [];
-    switch(type){
-      case 'SURVEY': case 'TARIK DC': case 'SUDAH SC': case 'PS': filtered = rows.filter(r=>t(r[STATUS_WO_INDEX])===type); break;
-      case 'KENDALA': filtered = rows.filter(r=>['KENDALA JARINGAN','KENDALA PELANGGAN'].includes(t(r[STATUS_WO_INDEX]))); break;
-      case 'SISA WO': filtered = rows.filter(r=> !['PS','BAI','KENDALA JARINGAN','KENDALA PELANGGAN'].includes(t(r[STATUS_WO_INDEX]))); break;
-      default: filtered = [];
-    }
-
-    const container = document.getElementById('detailContainer'); const thead = document.querySelector('#detailTable thead'); const tbody = document.querySelector('#detailTable tbody');
-    thead.innerHTML = '<tr>' + headers.map(h=>`<th>${h||''}</th>`).join('') + '</tr>';
+      thead.innerHTML = '';
     tbody.innerHTML = filtered.map(r=>`<tr>${r.map(c=>`<td>${c||''}</td>`).join('')}</tr>`).join('');
     container.style.display = filtered.length? 'block':'none'; if(filtered.length) container.scrollIntoView({behavior:'smooth', block:'start'});
   }
