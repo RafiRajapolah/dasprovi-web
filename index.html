@@ -236,9 +236,7 @@
         return acc + v;
       },0);
 
-      const totalRow = document.createElement('tr');
-      totalRow.innerHTML = headers.map((_,i)=> i===0 ? '<td><b>#</b></td>' : (i===11? `<td><b>${totalSisaWO}</b></td>`:'<td></td>')).join('');
-      tbody.appendChild(totalRow);
+      
 
     }catch(err){
       console.error(err);
