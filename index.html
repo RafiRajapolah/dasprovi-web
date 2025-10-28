@@ -1,278 +1,354 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DAS PROVI — Modern Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DAS PROVI Dashboard — Enhanced</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg:#f4f7fb;
+      --primary:#0a4275;
+      --accent:#145dbf;
+      --muted:#f4f6f8;
       --card:#ffffff;
-      --primary:#0a58a6;
-      --accent:#007bff;
-      --muted:#9aa7bd;
-      --shadow: 0 10px 30px rgba(12,40,80,0.06);
-      --radius:12px;
+      --shadow: 0 6px 20px rgba(10,66,117,0.08);
     }
     *{box-sizing:border-box}
-    html,body{height:100%}
-    body{ margin:0; font-family:Poppins,system-ui,Segoe UI,Roboto,Arial; background:var(--bg); color:#1f2937 }
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      display: flex;
+      background: var(--muted);
+      transition: all 0.3s ease;
+      color:#223;
+      min-height:100vh;
+    }
 
-    .app{ max-width:1200px; margin:20px auto; padding:18px; display:flex; gap:18px; align-items:flex-start }
+    /* Toggle button */
+    .menu-btn {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 18px;
+      z-index: 1001;
+      transition: background 0.3s;
+      box-shadow: var(--shadow);
+    }
+    .menu-btn:hover{background:var(--accent)}
 
-    .sidebar{ width:68px; background:linear-gradient(180deg,var(--primary),var(--accent)); border-radius:12px; padding:12px; color:#fff; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:12px; align-items:center }
-    .logo{ width:44px; height:44px; border-radius:10px; background:rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; font-weight:700 }
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      background-color: var(--primary);
+      color: white;
+      height: 100vh;
+      position: fixed;
+      left: -240px;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      padding-top: 70px;
+      transition: left 0.28s ease;
+      z-index: 1000;
+    }
+    .sidebar.active{left:0}
+    .sidebar h2{ text-align:center; font-size:18px; margin-bottom:12px }
+    .sidebar a{ color:white; text-decoration:none; padding:12px 20px; display:block }
+    .sidebar a.active, .sidebar a:hover{ background:var(--accent); border-left:4px solid #fff }
 
-    .main{ flex:1; background:var(--card); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow) }
-    .header{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:14px }
-    .title{ font-size:20px; font-weight:600 }
-    .controls{ display:flex; gap:8px; align-items:center }
-    .search{ display:flex; align-items:center; gap:8px; background:#f5f7fb; border-radius:10px; padding:6px 8px }
-    .search input{ border:0; background:transparent; outline:none; font-size:14px; min-width:220px }
-    .btn{ background:var(--primary); color:#fff; border:0; padding:8px 10px; border-radius:8px; cursor:pointer }
+    /* Content area */
+    .content{
+      flex:1;
+      margin: 0 auto;
+      padding: 24px;
+      padding-left: 80px;
+      max-width: 1200px;
+      width:100%;
+      transition: margin-left 0.3s ease;
+    }
 
-    .table-wrap{ width:100%; overflow:auto; border-radius:12px }
-    table{ width:100%; border-collapse:collapse; min-width:900px }
-    thead th{ position:sticky; top:0; background:linear-gradient(180deg,var(--accent),var(--primary)); color:#fff; padding:12px 10px; text-transform:uppercase; font-size:12px }
-    tbody td{ padding:12px 10px; border-bottom:1px solid #f0f3f8; font-size:13px; text-align:center }
+    header.row{
+      display:flex; gap:12px; align-items:center; justify-content:space-between; margin-bottom:18px;
+    }
+    h1{ margin:0; font-size:20px }
+
+    /* Table styles */
+    .card{ background:var(--card); border-radius:12px; padding:14px; box-shadow:var(--shadow); }
+    table { width:100%; border-collapse:collapse; overflow:hidden; border-radius:8px }
+    thead th{ text-align:center; padding:10px 8px; background:linear-gradient(180deg,var(--accent),var(--primary)); color:#fff; font-size:12px; text-transform:uppercase }
+    tbody td{ padding:8px; border-bottom:1px solid #eee; text-align:center; font-size:13px }
     tbody tr:hover{ background:#f7fbff }
     td.clickable{ color:var(--accent); cursor:pointer; font-weight:600 }
 
-    #detailContainer{ margin-top:14px; display:none }
-    .overlay{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(12,20,40,0.25); z-index:9999; visibility:hidden; opacity:0; transition:all .18s }
+    /* Detail container */
+    #detailContainer{ margin-top:18px; max-height:420px; overflow:auto; transition:all .3s; opacity:1 }
+
+    /* Loading overlay */
+    .overlay{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.6); z-index:2000; visibility:hidden; opacity:0; transition:all .2s }
     .overlay.active{ visibility:visible; opacity:1 }
-    .spinner{ width:56px; height:56px; border-radius:50%; border:6px solid rgba(255,255,255,0.14); border-top-color:#fff; animation:spin 1s linear infinite }
+    .spinner{ width:64px; height:64px; border-radius:50%; border:6px solid rgba(10,66,117,0.12); border-top-color:var(--primary); animation:spin 1s linear infinite }
     @keyframes spin{ to{ transform:rotate(360deg) } }
 
-    .error{ background:#fff4f6; color:#b91c1c; padding:10px; border-radius:8px; margin-bottom:8px; display:none }
+    /* Controls */
+    .controls{ display:flex; gap:8px; align-items:center }
+    .controls input[type=text]{ padding:8px 10px; border-radius:8px; border:1px solid #ddd; min-width:220px }
+    .controls button{ padding:8px 10px; border-radius:8px; border:0; background:var(--primary); color:white; cursor:pointer }
 
-    @media (max-width:900px){ .app{ padding:12px; margin:12px } table{ min-width:800px } .sidebar{ display:none } .search input{ min-width:120px } thead th, tbody td{ padding:10px } }
-    @media (max-width:520px){ table{ min-width:700px } }
-
-    /* We'll hide SISA WO column from rendering rather than via CSS. Keep rule for safety */
-    table tr td:last-child, table tr th:last-child { display:none }
+    /* Responsive */
+    @media (max-width:900px){ .sidebar{width:200px} .menu-btn{left:10px} .content{padding-left:16px} }
+    @media (max-width:600px){ thead th{ font-size:11px } tbody td{ font-size:12px } .controls input[type=text]{ min-width:120px } }
   </style>
 </head>
 <body>
-  <div class="app">
-    <nav class="sidebar" aria-hidden="false">
-      <div class="logo">DP</div>
-      <a href="#" title="Dashboard">🏠</a>
-      <a href="#" title="Provi SPA">📋</a>
-      <a href="#" title="Monet">💰</a>
-    </nav>
+  <button class="menu-btn" id="menuBtn">☰</button>
 
-    <main class="main" role="main">
-      <div class="header">
-        <div>
-          <div class="title">Dashboard Provisioning</div>
-          <div style="color:var(--muted); font-size:13px; margin-top:4px">Ringkasan & Sisa WO — Responsive & Modern</div>
-        </div>
-        <div class="controls">
-          <div class="search" role="search">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 21l-4.35-4.35" stroke="#6b7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <input id="searchDetail" placeholder="Cari di detail (ketik bebas)..." aria-label="search" />
-          </div>
-          <button id="refreshBtn" class="btn" title="Refresh sekarang">🔄 Refresh</button>
-        </div>
-      </div>
-
-      <div id="errorBox" class="error" role="alert"></div>
-
-      <div class="table-wrap card" aria-live="polite">
-        <table id="mainTable" role="table">
-          <thead></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-
-      <div id="detailContainer" class="card">
-        <h3 style="margin-top:0; color:var(--primary)">Detail Data</h3>
-        <div style="overflow:auto; max-height:360px">
-          <table id="detailTable"><thead></thead><tbody></tbody></table>
-        </div>
-      </div>
-    </main>
+  <div class="sidebar" id="sidebar">
+    <h2>📊 Dashboard</h2>
+    <a href="#" class="active">🏠 Das Provi</a>
+    <a href="#">📋 Provi SPA</a>
+    <a href="#">💰 Monet</a>
   </div>
 
-  <div class="overlay" id="overlay"><div class="spinner" role="status" aria-label="loading"></div></div>
+  <div class="content">
+    <div class="row header">
+      <h1>Dashboard Provisioning — Enhanced</h1>
+      <div class="controls">
+        <input id="searchDetail" type="text" placeholder="Cari di detail (ketik bebas)..." aria-label="Search detail" />
+        <button id="refreshBtn" title="Refresh sekarang">🔄 Refresh</button>
+        <div style="width:8px"></div>
+      </div>
+    </div>
+
+    <div class="card" id="mainCard">
+      <table id="mainTable">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="detailContainer" class="card" aria-live="polite" style="display:none">
+      <h2 style="color:var(--accent); margin-top:0">Detail Data</h2>
+      <table id="detailTable">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="overlay" id="overlay" aria-hidden="true"><div class="spinner" role="status" aria-label="Loading"></div></div>
 
   <script>
-  // Config
+  // -------------------- Configuration --------------------
   const SHEET_MAIN = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1651389267&single=true&output=csv";
   const SHEET_PROVI = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pub?gid=1451848426&single=true&output=csv";
-  const AUTO_REFRESH_MS = 60 * 1000; // 1 minute
-  const FETCH_TIMEOUT_MS = 15000; // 15s
 
-  let cacheMain = null, cacheProvi = null, autoRefreshTimer = null;
-  const overlay = document.getElementById('overlay');
-  const errorBox = document.getElementById('errorBox');
+  // Auto refresh interval in milliseconds (user chose: 1 minute)
+  const AUTO_REFRESH_MS = 60 * 1000;
 
-  function showLoading(){ overlay.classList.add('active') }
-  function hideLoading(){ overlay.classList.remove('active') }
-  function showError(msg){ errorBox.style.display='block'; errorBox.textContent = msg }
-  function clearError(){ errorBox.style.display='none'; errorBox.textContent = '' }
+  // -------------------- State --------------------
+  let cacheMain = null;    // parsed CSV array (rows)
+  let cacheProvi = null;   // parsed Provi_spa CSV array (rows)
+  let autoRefreshTimer = null;
 
-  function parseNumber(v){ if (v === null || v === undefined) return 0; const s = String(v).replace(/[^0-9.-]+/g,''); const n = parseFloat(s); return isNaN(n)?0:n }
+  // -------------------- Utils --------------------
+  function $(sel){ return document.querySelector(sel) }
+  const overlay = $('#overlay');
+  function showLoading(){ overlay.classList.add('active'); overlay.setAttribute('aria-hidden','false') }
+  function hideLoading(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true') }
 
-  // fetch with timeout and optional CORS proxy fallback
-  async function fetchWithTimeout(url, opts = {}){
-    const controller = new AbortController();
-    const id = setTimeout(()=> controller.abort(), FETCH_TIMEOUT_MS);
-    try{
-      const res = await fetch(url, { signal: controller.signal, ...opts });
-      clearTimeout(id);
-      return res;
-    }catch(err){
-      clearTimeout(id);
-      throw err;
-    }
+  function parseNumber(v){
+    if (v === null || v === undefined) return 0;
+    // remove commas and non-numeric chars except - and .
+    const s = String(v).replace(/[^0-9.-]+/g, '');
+    const n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
   }
 
+  // -------------------- CSV Fetch with PapaParse --------------------
   async function fetchCSV(url){
-    if (typeof navigator !== 'undefined' && !navigator.onLine) throw new Error('Anda sedang offline.');
-    try{
-      const res = await fetchWithTimeout(url, { cache: 'no-store' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const text = await res.text();
-      return Papa.parse(text.trim(), { header: false, skipEmptyLines: true }).data;
-    }catch(err){
-      console.warn('Direct fetch failed:', err.message || err);
-      // try proxy fallback
-      try{
-        const proxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-        const res2 = await fetchWithTimeout(proxy, { cache: 'no-store' });
-        if (!res2.ok) throw new Error('Proxy HTTP ' + res2.status);
-        const text2 = await res2.text();
-        return Papa.parse(text2.trim(), { header: false, skipEmptyLines: true }).data;
-      }catch(proxyErr){
-        throw new Error('Gagal unduh CSV. Pastikan Google Sheet dipublish (File → Publish to web) dan linknya dapat diakses. Detail: ' + (proxyErr.message || proxyErr));
-      }
-    }
+    const res = await fetch(url, {cache: 'no-store'});
+    if (!res.ok) throw new Error('Failed to fetch CSV: ' + res.status);
+    const text = await res.text();
+    // Use PapaParse (loaded later) via global Papa
+    return Papa.parse(text.trim(), { header: false, skipEmptyLines: true }).data;
   }
 
-  // Build main table but SKIP rendering the last column (SISA WO) to remove the stray numbers
+  // -------------------- Build Main Table --------------------
   async function loadMainTable(){
-    clearError();
     try{
       showLoading();
-      if (typeof Papa === 'undefined') throw new Error('Library PapaParse belum dimuat.');
-
+      // If cached and still fresh we could skip; but we always fetch to respect realtime
       const [dataMain, dataProvi] = await Promise.all([fetchCSV(SHEET_MAIN), fetchCSV(SHEET_PROVI)]);
-      cacheMain = dataMain; cacheProvi = dataProvi;
+      cacheMain = dataMain;
+      cacheProvi = dataProvi;
 
-      // original: slice rows 2..17 (0-based) and columns C..M (2..12)
+      // original code used rows slice(2,18) and columns C–M (index 2–12)
       const rows = cacheMain.slice(2, 18).map(r => r.slice(2, 13));
       const headers = rows[0] || [];
       const bodyRows = rows.slice(1);
 
-      const thead = document.querySelector('#mainTable thead');
-      const tbody = document.querySelector('#mainTable tbody');
+      const thead = $('#mainTable thead');
+      const tbody = $('#mainTable tbody');
 
-      // Render headers but skip the last header (index 11)
-      const visibleHeaderCells = headers.map((h, i) => ({i, text: h||''})).filter(c => c.i !== 11);
-      thead.innerHTML = '<tr>' + visibleHeaderCells.map(c => `<th>${c.text}</th>`).join('') + '</tr>';
-
+      thead.innerHTML = '<tr>' + headers.map(h => `<th>${h || ''}</th>`).join('') + '</tr>';
       tbody.innerHTML = '';
 
-      bodyRows.forEach(row =>{
+      // build rows and compute SISA WO per row
+      bodyRows.forEach((row)=>{
+        // guard length
         while(row.length < 12) row.push('');
-        const tselAO = parseNumber(row[1]); const tselMO = parseNumber(row[2]);
-        const indiAO = parseNumber(row[3]); const indiMO = parseNumber(row[4]);
-        const ps = parseNumber(row[9]); const kendala = parseNumber(row[10]);
-        const sisaWO = (tselAO + tselMO + indiAO + indiMO) - (ps + kendala);
-        row[11] = sisaWO; // keep value for totals but won't render column
+        // indexes relative to sliced row: 1:D,2:E,3:F,4:G,9:K,10:L -> zero-based in slice
+        const tselAO = parseNumber(row[1]);
+        const tselMO = parseNumber(row[2]);
+        const indiAO  = parseNumber(row[3]);
+        const indiMO  = parseNumber(row[4]);
+        const ps      = parseNumber(row[9]);
+        const kendala = parseNumber(row[10]);
+        const sisaWO  = (tselAO + tselMO + indiAO + indiMO) - (ps + kendala);
+        row[11] = sisaWO; // put in column M (index 11)
 
         const tr = document.createElement('tr');
-        // render cells except index 11
-        row.forEach((val, idx) =>{
-          if (idx === 11) return; // skip rendering SISA WO column
-          const td = document.createElement('td'); td.textContent = (val === null || val === undefined) ? '' : val;
-          // clickable mapping uses original column indices (5..10 relative to sliced array)
-          const statusMap = {5:'SURVEY',6:'TARIK DC',7:'SUDAH SC',8:'PS',9:'KENDALA',10:'SISA WO'};
-          if (!isNaN(parseNumber(val)) && statusMap[idx]){
-            td.classList.add('clickable'); td.dataset.status = statusMap[idx]; td.addEventListener('click', (e)=> handleStatusClick(e.currentTarget.dataset.status));
+        row.forEach((val, colIndex)=>{
+          const td = document.createElement('td');
+          td.textContent = (val === '' || val === null || val === undefined) ? '' : val;
+          // clickable columns: map to status names like original mapping (5..10)
+          const statusMap = { 5:'SURVEY', 6:'TARIK DC', 7:'SUDAH SC', 8:'PS', 9:'KENDALA', 10:'SISA WO' };
+          if (!isNaN(parseNumber(val)) && statusMap[colIndex]){
+            td.classList.add('clickable');
+            td.dataset.status = statusMap[colIndex];
+            td.addEventListener('click',(e)=> handleStatusClick(e.currentTarget.dataset.status));
           }
           tr.appendChild(td);
         });
         tbody.appendChild(tr);
       });
 
-      // compute total for visible columns. We must compute totals per original column indices, but only render visible totals
-      // Build totals array length = headers.length (12), initialize zero
-      const totals = new Array(headers.length).fill(0);
-      Array.from(tbody.querySelectorAll('tr')).forEach(tr =>{
-        // Each tr currently has 11 cells (since we skipped last). We need to map back to original indices.
-        // We'll use original bodyRows to compute totals instead — safer.
-      });
+      // total SISA WO (column index 11). Exclude any possible last total row if present
+      const totalSisaWO = Array.from(tbody.querySelectorAll('tr')).reduce((acc,tr)=>{
+        const v = parseNumber(tr.children[11]?.textContent || 0);
+        return acc + v;
+      },0);
 
-      // Compute totals from bodyRows data (use numeric parse)
-      const totalsFromData = new Array(headers.length).fill(0);
-      bodyRows.forEach(row =>{
-        for (let i=0;i<headers.length;i++){
-          totalsFromData[i] += parseNumber(row[i]);
-        }
-      });
-
-      // Create total row but render only visible columns (skip index 11)
       const totalRow = document.createElement('tr');
-      visibleHeaderCells.forEach((c, idx) =>{
-        if (c.i === 0){
-          totalRow.appendChild(Object.assign(document.createElement('td'), { innerHTML: '<b>TOTAL</b>' }));
-        } else {
-          const val = totalsFromData[c.i];
-          totalRow.appendChild(Object.assign(document.createElement('td'), { innerHTML: c.i === 0 ? '<b>TOTAL</b>' : `<b>${val}</b>` }));
-        }
-      });
+      totalRow.innerHTML = headers.map((_,i)=> i===0 ? '<td><b>TOTAL</b></td>' : (i===11? `<td><b>${totalSisaWO}</b></td>`:'<td></td>')).join('');
       tbody.appendChild(totalRow);
 
     }catch(err){
       console.error(err);
-      showError('Terjadi kesalahan saat load data: ' + (err.message || err));
+      alert('Terjadi kesalahan saat load data: ' + (err.message || err));
     }finally{
       hideLoading();
     }
   }
 
-  function handleStatusClick(status){ if (!cacheProvi){ showError('Data detail belum siap. Tekan Refresh.'); return; } showDetail(status); }
-
-  function showDetail(type){
-    const data = cacheProvi; if (!data || data.length === 0) return;
-    const headers = data[0]; const rows = data.slice(1); const STATUS_WO_INDEX = 7;
-    const t = s => (s||'').toString().trim().toUpperCase();
-    let filtered = [];
-    switch(type){
-      case 'SURVEY': case 'TARIK DC': case 'SUDAH SC': case 'PS': filtered = rows.filter(r => t(r[STATUS_WO_INDEX]) === type); break;
-      case 'KENDALA': filtered = rows.filter(r => ['KENDALA JARINGAN','KENDALA PELANGGAN'].includes(t(r[STATUS_WO_INDEX]))); break;
-      case 'SISA WO': filtered = rows.filter(r => !['PS','BAI','KENDALA JARINGAN','KENDALA PELANGGAN'].includes(t(r[STATUS_WO_INDEX]))); break;
-      default: filtered = [];
-    }
-
-    const container = document.getElementById('detailContainer'); const thead = document.querySelector('#detailTable thead'); const tbody = document.querySelector('#detailTable tbody');
-    thead.innerHTML = '<tr>' + (headers||[]).map(h => `<th>${h||''}</th>`).join('') + '</tr>';
-    tbody.innerHTML = filtered.map(r => `<tr>${r.map(c=>`<td>${c||''}</td>`).join('')}</tr>`).join('');
-    container.style.display = filtered.length ? 'block' : 'none'; container.scrollIntoView({ behavior:'smooth', block:'start' });
+  // -------------------- Detail View --------------------
+  function handleStatusClick(status){
+    // Use cached Provi data to filter
+    if (!cacheProvi){ alert('Data detail belum siap, coba refresh.'); return; }
+    showDetail(status);
   }
 
-  // search in detail (flexible)
-  function initSearch(){ const input = document.getElementById('searchDetail'); let t=null; input.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=> applySearch(input.value.trim()), 200); }); }
-  function applySearch(q){ const tbody = document.querySelector('#detailTable tbody'); if (!tbody) return; const rows = Array.from(tbody.querySelectorAll('tr')); if (!q){ rows.forEach(r=> r.style.display=''); return; } const ql=q.toLowerCase(); rows.forEach(r=>{ r.style.display = r.textContent.toLowerCase().includes(ql) ? '' : 'none'; }); }
+  function showDetail(type){
+    const data = cacheProvi;
+    if (!data || data.length === 0) return;
+    const headers = data[0];
+    const rows = data.slice(1);
+    const STATUS_WO_INDEX = 7; // kolom H in original Provi_spa (zero-based)
 
-  document.getElementById('refreshBtn').addEventListener('click', ()=> loadMainTable());
+    let filtered = [];
+    const t = (s)=> (s||'').toString().trim().toUpperCase();
+    switch(type){
+      case 'SURVEY': case 'TARIK DC': case 'SUDAH SC': case 'PS':
+        filtered = rows.filter(r => t(r[STATUS_WO_INDEX]) === type);
+        break;
+      case 'KENDALA':
+        filtered = rows.filter(r => ['KENDALA JARINGAN','KENDALA PELANGGAN'].includes(t(r[STATUS_WO_INDEX])));
+        break;
+      case 'SISA WO':
+        filtered = rows.filter(r => !['PS','BAI','KENDALA JARINGAN','KENDALA PELANGGAN'].includes(t(r[STATUS_WO_INDEX])));
+        break;
+      default:
+        filtered = [];
+    }
 
-  function startAutoRefresh(){ if (autoRefreshTimer) clearInterval(autoRefreshTimer); autoRefreshTimer = setInterval(()=> loadMainTable(), AUTO_REFRESH_MS); }
+    const container = $('#detailContainer');
+    const thead = $('#detailTable thead');
+    const tbody = $('#detailTable tbody');
 
-  // init
-  (function init(){
+    thead.innerHTML = '<tr>' + (headers || []).map(h => `<th>${h||''}</th>`).join('') + '</tr>';
+    tbody.innerHTML = filtered.map(r => `<tr>${r.map(c=>`<td>${c||''}</td>`).join('')}</tr>`).join('');
+
+    container.style.display = filtered.length ? 'block' : 'none';
+    container.scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  // -------------------- Search (flexible across all columns) --------------------
+  function initSearch(){
+    const input = $('#searchDetail');
+    let timeout = null;
+    input.addEventListener('input', ()=>{
+      clearTimeout(timeout);
+      timeout = setTimeout(()=> applySearch(input.value.trim()), 200);
+    });
+  }
+
+  function applySearch(q){
+    const tbody = $('#detailTable tbody');
+    if (!tbody) return;
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    if (!q){ rows.forEach(r=> r.style.display=''); return; }
+    const qlow = q.toLowerCase();
+    rows.forEach(r=>{
+      const text = r.textContent.toLowerCase();
+      r.style.display = text.includes(qlow) ? '' : 'none';
+    });
+  }
+
+  // -------------------- Manual Refresh Button --------------------
+  function initRefresh(){
+    $('#refreshBtn').addEventListener('click', ()=> {
+      loadMainTable();
+    });
+  }
+
+  // -------------------- Auto Refresh --------------------
+  function startAutoRefresh(){
+    if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+    autoRefreshTimer = setInterval(()=>{
+      loadMainTable();
+    }, AUTO_REFRESH_MS);
+  }
+
+  // -------------------- Init --------------------
+  document.getElementById('menuBtn').addEventListener('click', ()=>{
+    document.getElementById('sidebar').classList.toggle('active');
+  });
+
+  function init(){
     initSearch();
-    // load PapaParse
-    const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js';
-    s.onload = async ()=>{ try{ await loadMainTable(); startAutoRefresh(); }catch(e){ showError('Gagal inisialisasi: '+(e.message||e)); } };
-    s.onerror = ()=> showError('Gagal load library PapaParse. Periksa koneksi.');
-    document.body.appendChild(s);
+    initRefresh();
+    // load PapaParse library then initial table
+    const papaScript = document.createElement('script');
+    papaScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js';
+    papaScript.onload = async ()=>{
+      await loadMainTable();
+      startAutoRefresh();
+    };
+    papaScript.onerror = ()=> alert('Gagal load library PapaParse. Periksa koneksi.');
+    document.body.appendChild(papaScript);
+
+    // clear interval on unload
     window.addEventListener('beforeunload', ()=>{ if (autoRefreshTimer) clearInterval(autoRefreshTimer); });
-  })();
+  }
+
+  init();
   </script>
 </body>
 </html>
