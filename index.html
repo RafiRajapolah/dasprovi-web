@@ -211,8 +211,8 @@
         const indiMO  = parseNumber(row[4]);
         const ps      = parseNumber(row[9]);
         const kendala = parseNumber(row[10]);
-        const sisaWO  = (tselAO + tselMO + indiAO + indiMO) - (ps + kendala);
-        row[11] = sisaWO; // put in column M (index 11)
+        //const sisaWO  = (tselAO + tselMO + indiAO + indiMO) - (ps + kendala);
+        //row[11] = sisaWO; // put in column M (index 11)
 
         const tr = document.createElement('tr');
         row.forEach((val, colIndex)=>{
