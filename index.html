@@ -141,45 +141,4 @@
   function showError(msg){ errorBox.style.display='block'; errorBox.textContent = msg }
   function clearError(){ errorBox.style.display='none'; errorBox.textContent = '' }
 
-  function parseNumber(v){ if (v==null) return 0; const s = String(v).replace(/[^0-9.-]+/g,''); const n = parseFloat(s); return isNaN(n)?0:n }
-
-  // Fetch CSV (direct) with basic error handling — sheet is public
-  async function fetchCSV(url){
-    if (typeof navigator !== 'undefined' && !navigator.onLine) throw new Error('Anda offline. Periksa koneksi.');
-    const res = await fetch(url, {cache:'no-store'});
-    if (!res.ok) throw new Error('Fetch gagal: ' + res.status);
-    const text = await res.text();
-    return Papa.parse(text.trim(), { header:false, skipEmptyLines:true }).data;
-  }
-
-  async function loadMainTable(){
-    clearError(); showLoading();
-    try{
-      if (typeof Papa === 'undefined') throw new Error('Library PapaParse belum dimuat.');
-      const [dataMain, dataProvi] = await Promise.all([fetchCSV(SHEET_MAIN), fetchCSV(SHEET_PROVI)]);
-      cacheMain = dataMain; cacheProvi = dataProvi;
-
-      // slice rows and columns as original
-      const rows = cacheMain.slice(2,18).map(r => r.slice(2,13));
-      const headers = rows[0] || []; const bodyRows = rows.slice(1);
-
-      const thead = document.querySelector('#mainTable thead'); const tbody = document.querySelector('#mainTable tbody');
-      thead.innerHTML = '';
-    tbody.innerHTML = filtered.map(r=>`<tr>${r.map(c=>`<td>${c||''}</td>`).join('')}</tr>`).join('');
-    container.style.display = filtered.length? 'block':'none'; if(filtered.length) container.scrollIntoView({behavior:'smooth', block:'start'});
-  }
-
-  // Search across detail
-  (function initSearch(){ const input = document.getElementById('searchDetail'); let to=null; input.addEventListener('input', ()=>{ clearTimeout(to); to = setTimeout(()=>{ const q = input.value.trim().toLowerCase(); const tbody = document.querySelector('#detailTable tbody'); if(!tbody) return; Array.from(tbody.querySelectorAll('tr')).forEach(r=>{ r.style.display = q===''? '':'none'; if(q && r.textContent.toLowerCase().includes(q)) r.style.display=''; }); },200); }); })();
-
-  // refresh button
-  document.getElementById('refreshBtn').addEventListener('click', ()=> loadMainTable());
-
-  // load PapaParse then data
-  (function init(){
-    const s = document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js';
-    s.onload = ()=> loadMainTable(); s.onerror = ()=> showError('Gagal memuat library PapaParse. Periksa koneksi.'); document.body.appendChild(s);
-  })();
-  </script>
-</body>
-</html>
+  function parseNumber(v){ if (v
