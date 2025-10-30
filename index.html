@@ -153,28 +153,6 @@
   function hideLoading(){overlay.classList.remove('active');overlay.setAttribute('aria-hidden','true')}
   function parseNumber(v){if(v===null||v===undefined)return 0;const s=String(v).replace(/[^0-9.-]+/g,'');const n=parseFloat(s);return isNaN(n)?0:n}
 
-  // -------------------------------------------------------
-  // Fungsi baru: hitung ulang angka per status per teknisi
-  // Menggunakan cacheProvi (CSV dari Provi SPA)
-  // Asumsi: Nama Teknisi ada di kolom E (index 4), STATUS WO di kolom H (index 7)
-  // -------------------------------------------------------
-  function countByStatus(teknisi, status) {
-    if (!cacheProvi || !Array.isArray(cacheProvi) || cacheProvi.length <= 1) return 0;
-    const STATUS_WO_INDEX = 7;
-    const NAMA_TEKNISI_INDEX = 4;
-    const t = s => (s || "").toString().trim().toUpperCase();
-    const teknisiUpper = t(teknisi);
-
-    return cacheProvi.slice(1).filter(r => {
-      const s = t(r[STATUS_WO_INDEX]);
-      const tech = t(r[NAMA_TEKNISI_INDEX]);
-      if (tech !== teknisiUpper) return false;
-      if (status === "KENDALA") return ["KENDALA JARINGAN", "KENDALA PELANGGAN"].includes(s);
-      if (status === "SISA WO") return !["PS", "BAI", "KENDALA JARINGAN", "KENDALA PELANGGAN"].includes(s);
-      return s === status;
-    }).length;
-  }
-
   async function fetchCSV(url){
     const res = await fetch(url,{cache:'no-store'});
     if(!res.ok) throw new Error('Failed to fetch CSV: '+res.status);
@@ -189,7 +167,6 @@
       cacheMain = dataMain;
       cacheProvi = dataProvi;
 
-      // Ambil baris yang relevan (sesuai code asli)
       const rows = cacheMain.slice(2,18).map(r=>r.slice(2,13));
       const headers = rows[0]||[];
       const bodyRows = rows.slice(1);
@@ -202,27 +179,7 @@
       bodyRows.forEach(row=>{
         while(row.length<12)row.push('');
         const tr=document.createElement('tr');
-
-        // Nama teknisi di kolom 0 seperti sebelumnya
-        const teknisiName=row[0];
-
-        // ---- OVERRIDE ANGKA: hitung ulang dari cacheProvi berdasarkan nama teknisi ----
-        // Menimpa kolom: index 5 -> SURVEY, 6->TARIK DC, 7->BAI, 8->PS, 9->KENDALA, 10->SISA WO
-        // (hanya mengganti nilai numerik; kolom lain dibiarkan sama)
-        try {
-          row[5] = String(countByStatus(teknisiName, "SURVEY"));
-          row[6] = String(countByStatus(teknisiName, "TARIK DC"));
-          row[7] = String(countByStatus(teknisiName, "BAI"));
-          row[8] = String(countByStatus(teknisiName, "PS"));
-          row[9] = String(countByStatus(teknisiName, "KENDALA"));
-          row[10] = String(countByStatus(teknisiName, "SISA WO"));
-        } catch(e) {
-          // jika ada error, biarkan nilai asli dan log untuk debug
-          console.warn('Error saat override angka untuk teknisi', teknisiName, e);
-        }
-
-        const teknisiNameForDataset = teknisiName; // tetap gunakan nama asli dari row[0]
-
+        const teknisiName=row[0]; // nama teknisi
         const statusMap={5:'SURVEY',6:'TARIK DC',7:'BAI',8:'PS',9:'KENDALA',10:'SISA WO'};
 
         row.forEach((val,colIndex)=>{
@@ -231,7 +188,7 @@
           if(!isNaN(parseNumber(val))&&statusMap[colIndex]){
             td.classList.add('clickable');
             td.dataset.status=statusMap[colIndex];
-            td.dataset.teknisi=teknisiNameForDataset;
+            td.dataset.teknisi=teknisiName;
             td.addEventListener('click',e=>handleStatusClick(
               e.currentTarget.dataset.status,
               e.currentTarget.dataset.teknisi
@@ -339,3 +296,5 @@
   </script>
 </body>
 </html>
+
+
