@@ -1,1 +1,69 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PT2 Singaparna</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      display: flex;
+      background: #f4f6f8;
+    }
+    .sidebar {
+      width: 220px;
+      background-color: #0a4275;
+      color: white;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-top: 20px;
+      position: fixed;
+    }
+    .sidebar h2 {
+      text-align: center;
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      padding: 12px 20px;
+      display: block;
+      transition: background 0.2s;
+    }
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: #145dbf;
+      border-left: 4px solid #fff;
+    }
+    .content {
+      margin-left: 220px;
+      padding: 20px;
+      flex: 1;
+    }
+    iframe {
+      width: 100%;
+      height: calc(100vh - 40px);
+      border: none;
+      border-radius: 8px;
+      background: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>📊 Dashboard</h2>
+    <a href="index.html">🏠 Das Provi</a>
+    <a href="provi_spa.html" class="active">📋 Provi SPA</a>
+    <a href="monet.html" class="active">💰 MONET</a>
+    <a href="pt2.html" class="active">PT2 Singaparna</a>
+  </div>
 
+  <div class="content">
+    <h1>PT2 Singaparna</h1>
+    <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQlp8lhcVisWxG9C5IwSDAtyJ1J9o5WwJWAiLMLutD7XI-G6VRh4IipiVkJQnFHXtigs9m2JhKaBD9B/pubhtml?gid=2024041372&single=true"></iframe>
+  </div>
+</body>
+</html>
